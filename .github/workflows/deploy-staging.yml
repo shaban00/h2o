@@ -78,32 +78,84 @@ jobs:
             --force-new-deployment \
             > /dev/null 2>&1
 
+      # - name: Wait for ECS task to be running and execute migration
+      #   run: |
+      #     NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
+          
+      #     aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN
+
+      #     # Wait 15 seconds to ensure the task is fully ready
+      #     sleep 15
+
+      #     # Execute Django migration command on the new task
+      #     aws ecs execute-command \
+      #       --cluster $ECS_CLUSTER \
+      #       --task $NEW_TASK_ARN \
+      #       --container $CONTAINER_NAME \
+      #       --interactive \
+      #       --command "python manage.py migrate" \
+      #       > /dev/null 2>&1
+
+      #     # Run custom commands to refresh search and FTS indexes
+      #     aws ecs execute-command \
+      #       --cluster $ECS_CLUSTER \
+      #       --task $NEW_TASK_ARN \
+      #       --container $CONTAINER_NAME \
+      #       --interactive \
+      #       --command "invoke refresh-search-index && invoke refresh-fts-index" \
+      #       > /dev/null 2>&1
+
       - name: Wait for ECS task to be running and execute migration
         run: |
-          NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
-          
-          aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN
-
-          # Wait 15 seconds to ensure the task is fully ready
-          sleep 15
-
-          # Execute Django migration command on the new task
-          aws ecs execute-command \
+          # Get the current task definition ARN used by the ECS service
+          CURRENT_TASK_DEF_ARN=$(aws ecs describe-services \
             --cluster $ECS_CLUSTER \
-            --task $NEW_TASK_ARN \
-            --container $CONTAINER_NAME \
-            --interactive \
-            --command "python manage.py migrate" \
-            > /dev/null 2>&1
+            --services $ECS_SERVICE \
+            --query "services[0].taskDefinition" --output text)
 
-          # Run custom commands to refresh search and FTS indexes
-          aws ecs execute-command \
-            --cluster $ECS_CLUSTER \
-            --task $NEW_TASK_ARN \
-            --container $CONTAINER_NAME \
-            --interactive \
-            --command "invoke refresh-search-index && invoke refresh-fts-index" \
-            > /dev/null 2>&1
+          # Get the new task definition ARN that was just registered
+          NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN
+
+          # Check if the task definition has changed (i.e., the update was successful)
+          if [[ "$CURRENT_TASK_DEF_ARN" != "$NEW_TASK_DEF_ARN" ]]; then
+            echo "Task definition has been updated. Waiting for the new task to start."
+
+            # Get the task ARN of the newly started task
+            NEW_TASK_ARN=$(aws ecs list-tasks \
+              --cluster $ECS_CLUSTER \
+              --service-name $ECS_SERVICE \
+              --desired-status RUNNING \
+              --family $NEW_TASK_DEF_ARN \
+              --query "taskArns[0]" \
+              --output text)
+
+            # Wait until the new task is running
+            aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN
+
+            # Wait 15 seconds to ensure the task is fully ready
+            sleep 15
+
+            # Execute Django migration command on the new task
+            aws ecs execute-command \
+              --cluster $ECS_CLUSTER \
+              --task $NEW_TASK_ARN \
+              --container $CONTAINER_NAME \
+              --interactive \
+              --command "python manage.py migrate" \
+              > /dev/null 2>&1
+
+            # Run custom commands to refresh search and FTS indexes
+            aws ecs execute-command \
+              --cluster $ECS_CLUSTER \
+              --task $NEW_TASK_ARN \
+              --container $CONTAINER_NAME \
+              --interactive \
+              --command "invoke refresh-search-index && invoke refresh-fts-index" \
+              > /dev/null 2>&1
+          else
+            echo "No task definition change detected, skipping task waiting."
+          fi
+
 
       - name: Turn off Maintenance mode
         run: |
