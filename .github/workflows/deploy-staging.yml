@@ -78,7 +78,6 @@ jobs:
             --service $ECS_SERVICE \
             --task-definition $NEW_TASK_DEF_ARN \
             --force-new-deployment \
-            --deployment-configuration "maximumPercent=200,minimumHealthyPercent=0" \
             > /dev/null 2>&1
 
       - name: Wait for ECS task to be running and execute migration
