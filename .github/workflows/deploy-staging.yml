@@ -56,9 +56,11 @@ jobs:
             --query "taskDefinition" > task-definition.json
 
           cat task-definition.json \
-            | jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG" \
-                --arg CONTAINER_NAME "$CONTAINER_NAME" \
-                '.containerDefinitions[].image = $IMAGE | .containerDefinitions[].name = $CONTAINER_NAME' > new-task-def.json
+            | jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .compatibilities)' > new-task-def.json
+
+          
+          cat new-task-def.json \
+            | jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG" --arg CONTAINER_NAME "$CONTAINER_NAME" '.containerDefinitions[].image = $IMAGE | .containerDefinitions[].name = $CONTAINER_NAME' > new-task-def.json
 
       - name: Register new ECS task definition
         id: register-task-def
