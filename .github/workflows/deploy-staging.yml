@@ -1,4 +1,4 @@
-name: Deploy Staging H2O to AWS ECS
+name: Deploy to ECS Staging
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Build & Deploy Staging H2O to AWS ECS with Maintenance Mode
+    name: Build & Deploy to ECS with Maintenance Mode
     runs-on: ubuntu-latest
 
     env:
@@ -43,7 +43,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag and push docker image to AWS ECR
+      - name: Build and Push Docker image
         run: |
           docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
@@ -56,16 +56,21 @@ jobs:
           aws ecs describe-task-definition --task-definition $TASK_DEFINITION_FAMILY --query "taskDefinition" > task-definition.json
 
           # Clean up the JSON by removing invalid fields
-          jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .compatibilities, .requiresAttributes)' task-definition.json > task-definition.json
+          jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .compatibilities, .requiresAttributes)' task-definition.json > new-task-def.json
 
-          # Update the image and container name
+          # Update the image and container name, and write output to updated-task-def.json
           jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG" --arg CONTAINER_NAME "$CONTAINER_NAME" \
-            '.containerDefinitions[].image = $IMAGE | .containerDefinitions[].name = $CONTAINER_NAME' task-definition.json > task-definition.json
+            '.containerDefinitions[].image = $IMAGE | .containerDefinitions[].name = $CONTAINER_NAME' new-task-def.json > updated-task-def.json
+
+          # Output updated task definition to debug
+          cat updated-task-def.json
 
       - name: Register new ECS task definition
         id: register-task-def
         run: |
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://task-definition.json --query "taskDefinition.taskDefinitionArn" --output text)
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://updated-task-def.json \
+            --query "taskDefinition.taskDefinitionArn" --output text)
 
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
 
@@ -77,10 +82,24 @@ jobs:
             --task-definition $NEW_TASK_DEF_ARN \
             --force-new-deployment
 
-      - name: Wait for ECS task to be running, execute migration and refresh indexes
+      - name: Wait for ECS task to be running and execute migration
         run: |
           NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
-          
+          aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN
+
+          # Execute Django migration command on the new task
+          aws ecs execute-command \
+            --cluster $ECS_CLUSTER \
+            --task $NEW_TASK_ARN \
+            --container $CONTAINER_NAME \
+            --interactive \
+            --command "python manage.py migrate" \
+            > /dev/null 2>&1
+
+      - name: Refresh Search & FTS Indexes
+        run: |
+          # Run custom commands to refresh search and FTS indexes
+          NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
           aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN
 
           aws ecs execute-command \
@@ -88,7 +107,7 @@ jobs:
             --task $NEW_TASK_ARN \
             --container $CONTAINER_NAME \
             --interactive \
-            --command "python manage.py migrate && invoke refresh-search-index && invoke refresh-fts-index" \
+            --command "invoke refresh-search-index && invoke refresh-fts-index" \
             > /dev/null 2>&1
 
       - name: Turn off Maintenance mode
