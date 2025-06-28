@@ -77,7 +77,8 @@ jobs:
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
             --task-definition $NEW_TASK_DEF_ARN \
-            --force-new-deployment
+            --force-new-deployment \
+            > /dev/null 2>&1
 
       - name: Wait for ECS task to be running and execute migration
         run: |
@@ -93,7 +94,7 @@ jobs:
             --task $NEW_TASK_ARN \
             --container $CONTAINER_NAME \
             --interactive \
-            --command "python manage.py migrate" \
+            --command "python manage.py migrate && invoke refresh-search-index && invoke refresh-fts-index" \
             > /dev/null 2>&1
 
       - name: Refresh Search & FTS Indexes
