@@ -1,0 +1,30 @@
+@mixin btn()
+{
+  @include sans-serif($regular, 13px, 16px);
+  padding: 14px 18px 12px;
+  border-width: 0px;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+@mixin btn-white()
+{
+  @include button-variant($black, $white, transparent);
+  font-weight: $bold;
+}
+
+.simple_form input[type=submit] {
+  @extend .btn;
+  @extend .btn-primary;
+}
+
+.button_to input[type=submit] {
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+a.reset-button {
+  @extend .btn;
+  @extend .btn-warning;
+}

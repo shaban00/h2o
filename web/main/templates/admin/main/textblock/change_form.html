@@ -1,0 +1,13 @@
+{% extends "admin/change_form_with_richeditor.html" %}
+{% load admin_urls %}
+
+{% block after_field_sets %}
+  {{ block.super }}
+  <div class="module aligned">
+    <div class="form-row">
+      <label>Annotations:</label><div class="readonly">{{ original.related_annotations.count }}</div>
+    </div>
+  </div>
+{% endblock %}
+
+

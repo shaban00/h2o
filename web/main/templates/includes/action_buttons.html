@@ -1,0 +1,91 @@
+<aside id="action-buttons" class="casebook-actions" data-actions="{{ action_list }}">
+    {% if editing %}
+    <audit-button :publish-check="{{ publish_check }}"> </audit-button>
+    {% elif publishable %}
+    <audit-button :publish-check="{{ publish_check }}" :no-save="true"> </audit-button>
+  {% endif %}
+    {% if can_be_directly_edited and not casebook.is_draft %}
+      <a class="action edit one-line" data-disable-with="Revise" href="{% firstof section.get_edit_url casebook.get_edit_url %}">{% if casebook.is_draft %}Continue Revising{% else %}Revise{% endif %}</a>
+  {% endif %}
+  {% if can_view_existing_draft %}
+      {# NB: in Rails "return to draft" also refers to a link from a draft's previews to its edit pages. For clarity, the Django app is only using "return to draft" as a link from the original to the draft, and uses "revise" or "continue revising" for links to edit pages. #}
+      <a class="action edit one-line" data-disable-with="Return to Draft" href="{% firstof section.get_draft_url casebook.get_draft_url %}">Return to Draft</a>
+  {% endif %}
+  {% if can_create_draft %}
+    <form class="button_to" method="post" action="{% if casebook %}{% url 'create_draft' casebook %}{% else %}{% url 'create_draft' section.casebook %}{% endif %}">
+      <input class="action edit one-line create-draft" data-disable-with="Revise" type="submit" value="Revise">
+      {% csrf_token %}
+    </form>
+    {# TODO: see if disable functionality works #}
+  {% endif %}
+  {% if can_add_nodes %}
+    {# TODO: actual "add resource" functionality #}
+    <add-content casebook="{{casebook.id}}" section="{{section.id}}"> </add-content>
+    <form class="button_to" method="post" action="{% url 'new_section' casebook %}">
+        {% if section %}
+        <input type="hidden" name="section" value="{{section.id}}">
+        {% endif %}
+        <input type="hidden" name="title" value="Untitled">
+      <input class="action add-section" data-disable-with="Add Section" type="submit" value="Add Section">
+      {% csrf_token %}
+    </form>
+  {% endif %}
+  {% if can_save_nodes %}
+      {# TODO: consider using buttons w/ "form" attribute instead of save_details.js #}
+      <button class="action one-line cancel cancel-{% if section and section.has_body %}resource{% elif section%}section{% else %}casebook{% endif %}-details" data-disable-with="Cancel">Cancel</button>
+  {% endif %}
+  {% if cloneable %}
+      {% if section %}
+      <section-cloner :casebook-targets="{{clone_section_targets}}"
+                      section-source="{{section.title}}"
+                      section-type="{% if section.resource_type == 'TextBlock' %}text{% elif section.resource_type == 'LegalDocument'%}Legal Doc{% elif not section.resource_type %}section{% else %}{{section.resource_type|lower}}{% endif %}"
+      >
+      </section-cloner>
+      {% else %}
+      <form class="clone_casebook" method="post" action="{% if casebook %}{% url 'clone' casebook %}{% else %}{% url 'clone' casebook %}{% endif %}">
+        <button class="action clone-casebook" data-disable-with="Clone" type="submit">Clone</button>
+        {% csrf_token %}
+    </form>
+      {% endif %}
+  {% endif %}
+
+  {% if exportable %}
+
+      <a class="action one-line export export-{{ section.is_annotated|yesno:"has,no" }}-annotations" role="button" rel="nofollow" href="#">Export</a>
+      <a class="action export-html" rel="nofollow" target="_blank" href="{% url 'as_printable_html' casebook %}">Reading mode<br/><small>BETA</small></a>
+  {% endif %}
+
+
+  {% if can_follow %}
+  <form class="follow_casebook" method="post" action="{% url 'follow_casebook' casebook %}">
+    <button class="action follow-casebook" data-disable-with="Follow" type="submit">Follow</button>
+
+    {% csrf_token %}
+  </form>
+  {% endif %}
+  {% if can_unfollow %}
+  <form class="unfollow_casebook" method="post" action="{% url 'follow_casebook' casebook %}">
+    <button class="action unfollow-casebook" data-disable-with="Unfollow" type="submit">Unfollow</button>
+    {% csrf_token %}
+  </form>
+  {% endif %}
+
+  {% if not user.verified_professor %}
+    {% if cloneable %}
+        {% if section %}
+        <take-notes-cloner :casebook-targets="{{clone_section_targets}}"
+                        section-source="{{section.title}}"
+                        section-type="{% if section.resource_type == 'TextBlock' %}text{% elif section.resource_type == 'LegalDocument'%}Legal Doc{% elif not section.resource_type %}section{% else %}{{section.resource_type|lower}}{% endif %}"
+        >
+        </take-notes-cloner>
+        {% elif editing %}
+        {% else %}
+        <form class="clone_casebook" method="post" action="{% if casebook %}{% url 'clone' casebook %}{% else %}{% url 'clone' casebook %}{% endif %}">
+          <button class="action annotate-casebook" data-disable-with="Clone" type="submit">Take Notes </button>
+          {% csrf_token %}
+        </form>
+        {% endif %}
+    {% endif %}
+  {% endif %}
+
+</aside>

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+{% block page_title %} {% if mode %}{{mode}} | {% endif %} {{casebook.title}} {% if section %}: {{ section.title }} {% endif %} {% endblock %}
+
+
+{% block banner %}
+{% include 'includes/preview_banner.html' %}
+{% endblock %}
+
+{% block mainContent %}
+{% include 'includes/casebook_page_tabs.html' %}
+<section id="credits" class="casebook {{casebook_color_class}}">
+    <div class="content">
+        <div class="casebook-inner">
+            <div class="top-strip"></div>
+            <ul class="settings-section">
+                <li>
+                    <p>
+                        {# PRIVATELY_EDITING = 'Fresh' #}
+                        {% if casebook.state == 'Fresh' %}
+                        This casebook is private. You and other authors can edit it freely.
+
+                        {# NEWLY_CLONED = 'Clone' #}
+                        {% elif casebook.state == 'Clone' %}
+                        This is a newly cloned casebook. Changes you make to it are private.
+
+                        {# DRAFT = 'Draft' #}
+                        {% elif casebook.state == 'Draft' %}
+                        This is a private draft of <a href="{{ casebook.revising.get_absolute_url }}">{{casebook.revising.title}}</a> that you can edit without other people seeing the changes until you're ready. When you're ready, you can publish your changes below.
+
+                        {# PUBLISHED = 'Public' #}
+                        {% elif casebook.state == 'Public' %}
+                        This is a public casebook. It will show up in searches, and anyone can read it.
+
+                        {# ARCHIVED = 'Archived' #}
+                        {% elif casebook.state == 'Archived' %}
+                        This casebook is archived. It won't show up on your dashboard, or in public searches.
+
+                        {# REVISING = 'Revising' #}
+                        {% elif casebook.revising %}
+                        This casebook is public, but you have a private draft at <a href="{{ casebook.draft.get_edit_url }}">{{casebook.draft.title}}</a> that you can edit and make public when you're ready.
+
+                        {% endif %}
+                    </p>
+                </li>
+                <li>
+                    <h4 class="settings-header">Manage Collaborators</h4>
+                    <div class="collaborator-list">
+                        <form action="" method="POST" class="form-control-group" >
+                            {% csrf_token %}
+                            {{ modify_collaborator_form.management_form}}
+                            <table>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th class="centered">Has Attribution</th>
+                                    <th class="centered{% if modify_collaborator_form.non_form_errors %} text-danger {% endif %}">Can Edit</th>
+                                    <th class="centered">Remove</th>
+                                </tr>
+                                {% for form in modify_collaborator_form %}
+                                <tr>
+                                    <td>{{ form.id }} {% if form.instance.user.attribution != "Anonymous" %}{{form.instance.user.attribution}}{% endif %}</td>
+                                    <td>{{form.instance.user.email_address}}</td>
+                                    <td class="centered">{{ form.has_attribution }}</td>
+                                    <td class="centered">{{ form.can_edit }}</td>
+                                    <td class="centered">
+                                        {% if form.instance.user != request.user %}
+                                        {{ form.DELETE }}
+                                        {% else %}
+                                        <input name="" type="checkbox" title="You may remove yourself as a collaborator with the button below." disabled/>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                            {% if modify_collaborator_form.non_form_errors %}
+                            <div>
+                                <strong class="text-danger">Casebooks must have at least one editor.</strong>
+                            </div>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary" name="submission_type" value="modify_collaborators">Save collaborator changes</button>
+                        </form>
+                    </div>
+                    <br />
+                    <h4>Invite a new Collaborator</h4>
+                    <form action="{% url 'casebook_settings' casebook %}" method="POST" class="form-control-group" >
+                        {% crispy invite_collaborator_form %}
+                        <button type="submit" class="btn btn-primary" name="submission_type" value="add_collaborator">Send Invitation</button>
+                    </form>
+                    <br />
+                    <h4>Leave Collaboration</h4>
+                    <form action="{% url 'casebook_settings' casebook %}" method="POST" class="form-control-group" >
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-danger"
+                                name="submission_type"
+                                value="leave_collaboration"
+                                {% if only_editor %}
+                                title="You may not remove yourself as the last editor on a casebook"
+                                disabled
+                                {% endif %}
+                        >Remove yourself from this casebook</button>
+                    </form>
+                </li>
+                <li>
+                    <h4 class="settings-header">Manage Casebook Visibility</h4>
+                    <ul class="transition-state">
+                        {% if casebook.can_depublish %}
+                        <li>
+                            <form action="{% url 'casebook_settings' casebook %}" method="POST" class="form-control-group">
+                                {% csrf_token %}
+                                <input type="hidden" name="submission_type" value="change_visibility" />
+                                <div>
+                                    <button id="unpublish" type="submit" class="btn btn-warning" name="transition_to" value="Fresh">Unpublish</button>
+                                </div>
+                                <div>
+                                    <span>Make this casebook private</span>
+                                </div>
+                            </form>
+                        </li>
+                        {% elif casebook.is_archived %}
+                        <li>
+                            <form action="{% url 'casebook_settings' casebook %}" method="POST" class="form-control-group">
+                                {% csrf_token %}
+                                <input type="hidden" name="submission_type" value="change_visibility" />
+                                <div>
+                                    <button id="unarchive" type="submit" class="btn btn-warning" name="transition_to" value="Fresh">Unarchive</button>
+                                </div>
+                                <div>
+                                    <span>Make this a private casebook, available on your dashboard</span>
+                                </div>
+                            </form>
+                        </li>
+                        {% elif casebook.can_archive %}
+                        <li>
+                            <form action="{% url 'casebook_settings' casebook %}" method="POST" class="form-control-group">
+                                {% csrf_token %}
+                                <input type="hidden" name="submission_type" value="change_visibility" />
+                                <div>
+                                    <button id="archive" type="submit" class="btn btn-danger" name="transition_to" value="Archived">Archive</button>
+                                </div>
+                                <div>
+                                    <span>Archived casebooks will not be viewable by other users, and won't show up in search or your dashboard</span>
+                                </div>
+                            </form>
+                        </li>
+                        {% elif casebook.in_edit_state %}
+                        <li>
+                            <p>
+                                You can publish your casebook <a href="{{ casebook.get_edit_url }}" title="Link to edit and publish casebook">here</a>
+                            </p>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+            {% include "includes/casebook_copyright_notice.html" %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,289 @@
+@import 'content/modals';
+
+main > .dashboard .content-inner {
+  @include make-md-column(8.25);
+  @include make-md-column-offset(2);
+}
+
+main > section.dashboard {
+  background-color: $light-gray;
+  padding-bottom: 20px;
+}
+
+main > header.dashboard {
+  margin: 20px 0 53px 0;
+  padding: 0 40px;
+}
+
+h2.casebooks {
+  @include sans-serif($light, 32px, 14px);
+  margin-top:8%;
+}
+
+
+hr.owned {
+  height: 2px;
+  margin-bottom: 16px;
+  background-color: $light-blue;
+}
+
+div.archived-link {
+    float: right;
+    clear: left;
+    margin-top: -1.5rem;
+    a {
+        color: grey;
+    }
+}
+
+div.dashboard-link {
+    float: right;
+    clear: left;
+    margin-top: -1.5rem;
+  }
+
+.title-divider {
+    border-top: 2px solid black;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 16px;
+
+    .title-name {
+        padding-right: 20px;
+        font-size:16px;
+    }
+    .title-slug{
+
+    }
+}
+
+.content-browser {
+  clear: both;
+  display: flex;
+  flex-wrap: wrap;
+  padding-top: 5%;
+
+  .state{
+    @include sans-serif($medium, 10px, 10px);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+  }
+
+  .content-page, .header-spacer {
+    width: 225px;
+    min-height:320px;
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+  }
+
+  .wrapper {
+      display: flex;
+      margin: 8px;
+
+      &.selected {
+          margin: 4px;
+          border: 4px solid blue;
+      }
+  }
+
+  .casebook-container {
+    display: flex;
+    flex-direction: column;
+  }
+    .content-page {
+    position: relative;
+    background-color: white;
+    border-left: 15px solid $gray;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .casebook-info, .unpublished-changes, .author-info, .root-attribution {
+      padding: 10px 10px 10px 15px;
+    }
+
+    .author-info {
+      .owner {
+        display:block;
+        text-overflow: ellipsis;
+        text-align: right;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        margin: 10px;
+        color:gray;
+      }
+      ul {
+        list-style: none;
+        font-size: 80%;
+        padding-inline-start: 10px;
+        li {
+            padding-inline-end: 20px;
+          .verified {
+            position: relative;
+            margin-top: 6px;
+            float: right;
+            margin-left: -20px;
+            left: 16px;
+          }
+        }
+      }
+    }
+    .title {
+      @include sans-serif($medium, 20px, 20px);
+      margin-bottom: 10px;
+      margin-top: 10px;
+      line-height: 1.5em;
+      @include line-clamp(4, 100px);
+    }
+    .subtitle {
+      @include sans-serif($light, 18px, 18px);
+      @include line-clamp(4, 72px);
+      color:gray;
+    }
+
+    .unpublished-changes {
+      background-color: $yellow;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      bottom: 40%;
+
+      .exclamation {
+        font-size: 36px;
+      }
+
+      .description {
+        padding-left: 15px;
+      }
+    }
+
+    .owner {
+      @include sans-serif($medium, 18px, 18px);
+      @include line-clamp(2, 42px);
+    }
+    .state{
+      @include sans-serif($medium, 10px, 10px);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      position:absolute;
+      top:-20px;
+      left:-15px;
+    }
+    &.public {
+      .state { color: $light-blue; }
+      .subtitle { color: $light-blue; }
+      border-left-color: $light-blue;
+    }
+    &.draft {
+      .state { color: $red; }
+      .subtitle { color: $yellow; }
+      border-left-color: $yellow;
+    }
+    &.archived {
+      .state { color: $gray; }
+      .subtitle { color: $gray; }
+      border-left-color: $gray;
+    }
+    &.draft {
+      &::after {
+        @include size(15px, 25px);
+        @include absolute(-15px, 0);
+        content: '';
+        background-image: url('~static/images/banner-draft-icon.svg');
+        background-position: -15px 0;
+        background-size: 15px;
+      }
+    }
+  }
+  .content-page:hover{
+    box-shadow: 0 3px 40px rgb(0 0 0 / 0.3);
+  }
+  .verified {
+    @include square(13px);
+    display: inline-block;
+    vertical-align: middle;
+    content: '';
+    background: url('~static/images/ui/verified.png') no-repeat;
+    margin-left: 3px;
+  }
+}
+
+// casebook-sub info section when there is a cover
+  // .casebook-sub-info{
+  //   max-width: 225px;
+  //   height: 40%;
+  //   background-color: white;
+  //   padding: 20px 10px 15px 15px;
+  //   border-radius: 15px;
+  //   .info-title{
+  //     font-weight: 600;
+  //     margin-bottom: 10px;
+  //     color: rgb(78, 78, 78);
+  //   }
+  //   .info-author-info{
+  //     p{
+  //       margin:0px;
+  //       color: gray;
+  //     }
+  //   }
+  //   .view-book-button{
+  //     @extend .btn-default;
+  //     margin-right: 5px;
+  //     padding: 5px 10px 5px 10px;
+  //     border: none;
+  //     float: right;
+  //   }
+  //   .view-book-button:focus {
+  //     outline: none;
+  //     box-shadow: none;
+  //   }
+  // }
+
+
+  .header-spacer {
+    height: 340px;
+
+    h3 {
+      @include sans-serif($medium, 21px, 20px);
+      margin-top: 0px;
+    }
+  }
+
+  .affiliation {
+    color: grey;
+    font-weight: 300;
+    @include line-clamp(2, 40px);
+  }
+
+
+
+  .root-attribution {
+    font-size: 10px;
+    color: grey;
+  }
+
+.alert-pip-holder {
+  position: relative;
+  .alert-pip {
+    position: absolute;
+    top: -1rem;
+    right: 0;
+    background-color: red;
+    color: white;
+    padding: 6px;
+    text-align: center;
+    z-index: 1;
+    border-radius: 100%;
+    box-shadow: 1px 1px 1px black;
+    min-width: 3rem;
+  }
+}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Resource {{ resource.ordinal_string }} | {{ resource.casebook.title }}{% endblock %}
+
+{% block banner %}
+<div class="casebook-draft banner">
+  <div class="banner-inner">
+    This casebook is a draft and is visible only to collaborators.
+  </div>
+</div>
+{% endblock %}
+
+{% block mainContent %}
+{% include 'includes/resource_tabs.html' with annotate_tab=True %}
+  <section class="casebook-draft casebook">
+    <div class="content">
+      <div class="casebook-inner">
+        <div class="top-strip"></div>
+        <header class="casebook-header">
+          <div class="casebook-title">
+            {{ resource.casebook.title }}
+          </div>
+        </header>
+        <header class="content">
+            <globals
+              :casebook="{{casebook.id}}"
+              {% if section %}:section="{{section.id}}"  {% endif %}
+              {% if search_sources_json %}:search-sources="{{search_sources_json}}"  {% endif %}
+            ></globals>
+            {% include 'includes/breadcrumbs.html' with content=resource %}
+            <h1 class="title">{{ resource.title }}</h1>
+        </header>
+        {% include 'includes/action_buttons.html' with content=resource %}
+        {% include 'includes/headnote.html' with content=resource %}
+        {% if resource.resource_type == 'LegalDocument' %}
+        {% include resource.resource.header_template with legal_doc=resource.resource %}
+        {% endif %}
+        <section class="resource">
+          <the-resource :editable="true" :resource="{{ body_json }}"></the-resource>
+        </section>
+      </div>
+    </div>
+  </section>
+{% endblock %}

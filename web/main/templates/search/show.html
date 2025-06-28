@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load current_query_string %}
+{% load humanize %}
+
+{% block mainContent %}
+  <header class="advanced-search view-searches-show">
+    <h1>H2O Casebook Collection</h1>
+    {% if counts %}
+    <p>
+      Search inside H2O's collection of {{ full_counts.casebook|intcomma|default:"0" }} casebooks,
+      {{ full_counts.legal_doc|intcomma|default:"0" }} legal documents, and
+      {{ full_counts.user|intcomma|default:"0" }} authors, or <a href="{% url 'featured' %}">view our featured casebooks</a>.
+    </p>
+    {% endif %}
+    <form novalidate="novalidate" class="simple_form search" accept-charset="UTF-8">
+      {# Hidden field to preserve active tab's category during form submission #}
+      {# Note that 'category' is singular, but 'type' is plural #}
+      <div class="form-group hidden search_type">
+        <input class="form-control hidden" name="type" value="{{ category }}" type="hidden" id="search_type">
+      </div>
+      <div class="narrow-inner">
+        <div class="input-group">
+          <input type="search" name="q" id="q" class="form-control" placeholder="Find Casebooks, Legal Documents, and Authors." aria-label="Find casebooks, legal docs, and authors." value="{{ request.GET.q }}">
+        </div>
+      </div>
+      {% include 'search/filters.html' %}
+    </form>
+  </header>
+  <section class="search-results">
+    <div class="content">
+      {% if counts %}
+        <div class="results-container">
+          <div class="type-tabs">
+
+            <div class="type-tab {% if category == 'casebook' %}active{% endif %}" {% if category == 'casebook' %}aria-current="location"{% endif %}>
+              <a href="?{% current_query_string type="casebooks" page=1 %}" class="wrapper">
+                Casebooks ({{ counts.casebook|intcomma|default:"0" }})
+              </a>
+            </div>
+
+            <div class="type-tab {% if category == 'legal_doc' %}active{% endif %}" {% if category == 'legal_doc' %}aria-current="location"{% endif %}>
+              <a href="?{% current_query_string type="legal_doc" page=1 %}" class="wrapper">
+                Legal Documents ({{ counts.legal_doc|intcomma|default:"0" }})
+              </a>
+            </div>
+
+            <div class="type-tab {% if category == 'user' %}active{% endif %}" {% if category == 'user' %}aria-current="location"{% endif %}>
+              <a href="?{% current_query_string type="user" page=1 %}" class="wrapper">
+                Authors ({{ counts.user|intcomma|default:"0" }})
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      {% if results %}
+        {% include 'search/results.html' %}
+      {% else %}
+        <div class="no-results">
+          <h3>No results were found.</h3>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

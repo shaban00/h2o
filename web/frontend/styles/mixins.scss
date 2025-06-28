@@ -1,0 +1,79 @@
+@mixin link-color-full($normal, $hover, $active){
+  color: $normal;
+  border-bottom-color: transparent;
+  &:hover {
+    color: $hover;
+    border-bottom-color: $hover;
+  }
+  &:active {
+    color: $active;
+    border-bottom-color: $active;
+  }
+}
+
+@mixin link-color($base){
+  @include link-color-full($base, lighten($base, 10%), darken($base, 10%));
+}
+
+@mixin transition($arguments...){
+  -webkit-transition: $arguments;
+  -moz-transition: $arguments;
+  -o-transition: $arguments;
+  transition: $arguments;
+}
+
+@mixin absolute($x, $y) {
+  position: absolute;
+  left: $x;
+  top: $y;
+}
+
+@mixin relative($x, $y) {
+  position: relative;
+  left: $x;
+  top: $y;
+}
+
+@mixin absolute-offset($offset) {
+  @include absolute($offset, $offset);
+}
+
+@mixin hide {
+  display: none;
+}
+
+@mixin generic-focus-styles {
+  outline-style: solid;
+  outline-color: rgba(0,0,0,0.1);
+  outline-offset: 2px !important;
+  outline-width: 5px !important;
+}
+
+@mixin centered-md-column($count) {
+  @include make-md-column($count);
+  /* center instead of floating like a normal column */
+  float: none !important;
+  margin: auto;
+}
+
+@mixin line-clamp($lines, $max-height) {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+  @supports not (-webkit-line-clamp: $lines) {
+    max-height: $max-height;
+  }
+}
+
+@mixin verified-professor($font-size: 13px, $padding-right: 3px) {
+
+  &.verified::before {
+    height: $font-size;
+    width: calc($font-size + $padding-right);
+    display: inline-block;
+    vertical-align: middle;
+    content: '';
+    background: url('~static/images/ui/verified.png') no-repeat;
+  }
+}

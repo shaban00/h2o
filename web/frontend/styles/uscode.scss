@@ -1,0 +1,42 @@
+@import 'font-vars-and-mixins';
+
+// US GPO
+
+h4.subsection-head {
+    font-weight: bold;
+    font-size: 22px;
+}
+
+h4.notes-section {
+    margin-top: 6rem;
+    font-weight: bold;
+    font-size: 22px;
+}
+
+h4.paragraph-head {
+    padding-left: 1rem;
+}
+
+@for $indent from 1 through 5 {
+    // code to execute on each loop
+    p.statutory-body-#{$indent}em {
+        padding-left: #{1+$indent}rem;
+    }
+}
+
+// Headers
+
+header.uscode-header {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    .citation {
+        font-size: 18px;
+    }
+    .title {
+        @include serif-text($bold, 27px, 33px);
+    }
+}
+
+
+

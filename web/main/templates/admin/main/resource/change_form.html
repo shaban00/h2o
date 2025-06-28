@@ -1,0 +1,28 @@
+{% extends "admin/change_form_with_richeditor.html" %}
+{% load admin_urls %}
+
+{% block after_related_objects %}
+  {{ block.super }}
+  <div class="module aligned">
+    <h2>Resource</h2>
+    <div class="form-row field-resource_id">
+        <div>
+          <label>Resource id:</label>
+          <div class="readonly">{{ original.resource_id }}</div>
+        </div>
+    </div>
+    <div class="form-row field-resource_type">
+        <div>
+          <label>Resource type:</label>
+          <div class="readonly">{{ original.resource_type }}</div>
+        </div>
+    </div>
+    <div class="form-row">
+      {% with 'admin:main_'|add:original.resource_type|add:'_change'|lower as change_url %}
+      <a target="_blank" href="{% url change_url original.resource_id %}">
+        View in admin
+      </a>
+      {% endwith %}
+    </div>
+  </div>
+{% endblock %}

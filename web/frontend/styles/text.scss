@@ -1,0 +1,113 @@
+@import '~bootstrap-sass/assets/stylesheets/bootstrap/type';
+
+$headings-font-family: $font-family-sans-serif;
+$headings-font-weight: $regular;
+$font-size-h1: 30px;
+$font-size-h2: 24px;
+$font-size-h3: 18px;
+$font-size-h4: 16px;
+$font-size-h5: 16px;
+
+h5 {
+  @include sans-serif($regular, 12px, 12px);
+  text-transform: uppercase;
+  color: $orange;
+}
+
+a {
+  text-decoration: none !important;
+  border-bottom: 2px solid transparent;
+  &:active {
+    border-bottom-color: $light-blue;
+  }
+  &.wrapper, &.wrapper:hover, &.wrapper:active {
+    border: none !important;
+    color: inherit;
+  }
+}
+
+/* adapted from https://github.com/Automattic/_s/blob/master/sass/modules/_accessibility.scss */
+.skip-link {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute !important;
+    width: 1px;
+    word-wrap: normal !important; /* Many screen reader and browser combinations announce broken words as they would appear visually. */
+
+    &:focus {
+        background-color: $black;
+        border-radius: 3px;
+        box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.6);
+        clip: auto !important;
+        clip-path: none;
+        color: white;
+        display: block;
+        font-family: $headings-font-family;
+        font-size: 1.3em;
+        font-weight: bold;
+        height: auto;
+        left: 5px;
+        line-height: normal;
+        padding: 15px 23px 14px;
+        text-decoration: none;
+        top: 5px;
+        width: auto;
+        z-index: 100000;
+    }
+}
+
+.footnote-ref {
+    font-size: 16px;
+    vertical-align: super;
+}
+
+.footnote-footer {
+    border-top: 1px solid black;
+    clear:both;
+
+    .footnote-body {
+    margin-left: 2rem;
+    .footnote-label {
+        &::after {
+            content: '.';
+        }
+        float:left;
+        margin-left:-1rem;
+    }
+}
+}
+
+.image-center-large {
+    width: 80%;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+}
+
+.image-center-medium {
+    width: 50%;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+}
+
+.image-left-medium {
+    width: 50%;
+    object-fit: contain;
+    margin: 0 2rem;
+    float: left;
+    display: block;
+}
+
+.image-right-medium {
+    width: 50%;
+    object-fit: contain;
+    margin: 0 2rem;
+    float: right;
+    display: block;
+}

@@ -1,0 +1,44 @@
+$bold: 700;
+$medium: 500;
+$regular: 400;
+$light: 300;
+
+@mixin load-font($family, $style, $weight, $path)
+{
+    font-family: $family;
+    font-style: $style;
+    font-weight: $weight;
+    src: url($path + '.eot');
+    src: url($path + '.eot') format('embedded-opentype'),
+         url($path + '.woff') format('woff'),
+         url($path + '.ttf') format('ttf'),
+         url($path + '.svg') format('svg');
+}
+
+@mixin set-font($family, $weight, $size, $height)
+{
+  font-family: $family;
+  font-weight: $weight;
+  font-size: $size;
+  line-height: $height;
+}
+
+@mixin sans-serif($weight, $size, $height)
+{
+  @include set-font($font-family-sans-serif, $weight, $size, $height);
+}
+
+@mixin serif-headline($weight, $size, $height)
+{
+  @include set-font($font-family-headline, $weight, $size, $height);
+}
+
+@mixin serif-text($weight, $size, $height)
+{
+  @include set-font($font-family-serif, $weight, $size, $height);
+}
+
+@mixin monospace($weight, $size, $height)
+{
+  @include set-font($font-family-monospace, $weight, $size, $height);
+}

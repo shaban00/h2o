@@ -1,0 +1,72 @@
+@import '~bootstrap-sass/assets/stylesheets/bootstrap/forms';
+
+.form-control {
+  height: 52px;
+  font-size: 18px;
+}
+
+header.casebooks-search > .content > form > .form-group > input {
+  border-width: 1.5px;
+
+}
+
+label > .necessity {
+  @include sans-serif($bold, 11px, 12px);
+  color: $gray;
+}
+
+form .form-error-message {
+  @extend .alert;
+  @extend .alert-danger;
+}
+
+.error-wrapper {
+  @include transition(height .25s linear, margin .25s linear);
+  height: 0px;
+  margin: 0px;
+  overflow: hidden;
+
+  .has-error > & {
+    margin: 5px 0 0px;
+    height: 25px;
+  }
+}
+
+.error-transition {
+  @include transition(max-height .25s linear);
+
+  max-height: 50px;
+  &.hide {
+    max-height: 0px;
+  }
+}
+
+.export-title {
+  text-align: center;
+}
+
+.export-annotations {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+button.with-annotations{
+  margin-right: 20px;
+}
+
+.mce-content-body img[alt=""]:before {
+    content: "Must provide a description for images.";
+    height: 10rem;
+    width: 200px;
+    position: absolute;
+    top: 100%;
+    transform: translateY(-50%);
+    padding: 10px;
+    border-radius: 10px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    z-index: 100000;
+}

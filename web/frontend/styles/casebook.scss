@@ -1,0 +1,900 @@
+@import 'content/dragging';
+@import 'content/annotations';
+@import 'content/modals';
+@import 'credits';
+
+main > .casebook .casebook-inner {
+  @include centered-md-column(9);
+  /*
+    The following line is CSS voodoo.
+    It allows the paragraph numbers to be aligned along the left border.
+    For how this works, see
+    https://meyerweb.com/eric/thoughts/2011/09/12/un-fixing-fixed-elements-with-css-transforms/
+  */
+  transform:rotate(0deg);
+}
+
+main > section.casebook {
+  background-color: $light-gray;
+  padding-bottom: 20px;
+
+  .top-strip {
+    margin-top: 1px;
+    height: 20px;
+  }
+  &.casebook-draft .top-strip {
+    background-color: $yellow;
+  }
+  &.casebook-public .top-strip {
+    background-color: $light-blue;
+  }
+  &.casebook-archived .top-strip {
+      background-color: grey;
+  }
+  &.casebook-draft .subtitle {
+    color: $yellow;
+  }
+}
+
+main > header.casebook {
+  padding: 20px 40px 0;
+
+  .tabs {
+    display: flex;
+
+    @media (max-width: $screen-xs) {
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: flex-end;
+    }
+
+    .tab {
+      @include btn();
+      @include button-variant($black, $white, $light-gray);
+      height: 38px;
+      border: 2px solid $light-gray;
+      border-bottom-width: 0;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+      padding: 0;
+      flex-basis: 137px;
+
+      @media (max-width: $screen-xs) {
+        flex-basis: 50px;
+      }
+      &.disabled {
+        background-color: $light-gray;
+      }
+      &:focus-visible {
+        @include generic-focus-styles;
+        z-index: 999;
+      }
+    }
+    .tab.active {
+      color: $white;
+      background-color: $light-blue;
+      border: none;
+    }
+  }
+  &.casebook-draft {
+    .tabs .tab.active {
+      color: $black;
+      background-color: $yellow;
+      border-color: $yellow;
+    }
+  }
+  &.casebook-archived {
+      .tabs .tab.active {
+          color: white;
+          background-color: grey;
+          border-color: black;
+      }
+  }
+}
+
+.casebook-actions {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  margin: 24px 0 12px;
+  @media (min-width: $screen-xs) {
+    max-height: 250px;
+  }
+  @media (min-width: $screen-sm) {
+    max-height: none;
+    justify-content: space-evenly;
+    flex-direction: row;
+  }
+  @media (min-width: $screen-md) {
+    display: block;
+    position: absolute;
+    right: percentage((-1.5 / $grid-columns));
+    top: -40px;
+    width: 12.5%;
+    margin: 0;
+  }
+
+  a.action {
+    padding-top: 16px !important;
+  }
+  button.action, input.action, a.action {
+    @include sans-serif($bold, 14px, 14px);
+    @include transition(background-size 0.05s linear, background-position 0.05s linear);
+    display: block;
+    height: 60px;
+    padding: 3px 0 0 60px;
+    position: relative;
+    border: none;
+    line-height: 30px;
+    white-space: nowrap;
+    text-align: left;
+    margin-right: 15px;
+
+    color: $light-blue;
+
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-size: 50px;
+    background-position: 3px center;
+
+    &:hover, &:focus {
+      outline: none;
+      text-decoration: underline !important;
+      color: $light-blue;
+    }
+    &:focus-visible {
+      @include generic-focus-styles;
+    }
+    &:hover {
+      background-size: 55px;
+      background-position: 0 center;
+    }
+    &:active {
+      background-size: 48px;
+      background-position: 4px center;
+    }
+    &.add-resource {
+      background-image: url('~static/images/ui/casebook/add-material.svg');
+    }
+    &.add-section {
+      background-image: url('~static/images/ui/casebook/add-section.svg');
+    }
+    &.publish {
+      background-image: url('~static/images/ui/casebook/publish.svg');
+    }
+    &.clone-casebook {
+      background-image: url('~static/images/ui/casebook/clone.svg');
+      border: none;
+    }
+
+    &.export {
+        background-image: url('~static/images/ui/casebook/export.svg');
+        &::after{
+            position:absolute; width:0; height:0; overflow:hidden; z-index:-1;
+            content: url('~static/images/ui/casebook/export-anim.svg');
+        }
+    }
+    &.export-html {
+      background-image: url('~static/images/ui/casebook/export-html.svg');
+      line-height: 1.2em;
+      small {
+        color: $orange;
+      }
+    }
+    &.export.animating {
+        background-image: url('~static/images/ui/casebook/export-anim.svg');
+    }
+
+    &.more, &.preview {
+      background-image: url('~static/images/ui/casebook/preview.svg');
+    }
+    &.edit {
+      background-image: url('~static/images/ui/casebook/edit-icon.svg');
+    }
+    &.save {
+      background-image: url('~static/images/ui/casebook/save-icon.svg');
+    }
+    &.cancel {
+      background-image: url('~static/images/ui/casebook/cancel-icon.svg');
+    }
+    &.follow-casebook {
+      background-image: url('~static/images/ui/casebook/follow.svg');
+    }
+    &.unfollow-casebook {
+      background-image: url('~static/images/ui/casebook/unfollow.svg');
+    }
+  }
+}
+
+.prev_button_container a, .next_button_container a {
+  display: none;
+
+  @media (min-width: $screen-md) {
+    display: block;
+    position: fixed;
+    bottom: 40vh;
+    border-bottom: 0;
+    transition: transform .2s;
+
+    .prev_page_svg, .next_page_svg {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+    }
+
+    &:hover, &:focus {
+      transform: scale(1.2);
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.prev_button_container a {
+  right: 92vw;
+  .prev_page_svg {
+    background-image: url('~static/images/ui/casebook/prev_page.svg');
+  }
+}
+
+.next_button_container a {
+  right: 5vw;
+  .next_page_svg {
+    background-image: url('~static/images/ui/casebook/next_page.svg');
+  }
+}
+
+
+form.edit_content_resource, form.edit_content_section, form.edit_content_casebook {
+  label:not([for="cover_image-clear_id"]) {
+    @extend .sr-only;
+  }
+  div.visible-in-form label {
+      position: unset;
+      width: unset;
+      height: unset;
+      padding-left:20px;
+  }
+  #div_id_description{
+    .form-control{
+      height:100px;
+    }
+  }
+}
+
+.casebook-inner {
+  header.content{
+    padding: 10px 32px;
+
+    .form-control{
+      font-size: 15px;
+    }
+  }
+  header.casebooks-search {
+    margin-bottom: 30px;
+  }
+  header.inner, section.resource-search {
+    padding: 20px 40px;
+  }
+  section.no-headnote {
+    height: 10px;
+  }
+  header.casebook-header {
+    margin-bottom: 2px;
+    padding: 20px 20px 20px 30px;
+    background-color: $white;
+    display: flex;
+    justify-content: space-between;
+
+    .casebook-title {
+      @include sans-serif($bold, 20px, 24px);
+      color: $dark-gray;
+    }
+    .casebook-date {
+      color: $dark-gray;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+  header.content {
+    background-color: $white;
+    .title {
+      margin: 0;
+      font-size: 32px;
+      line-height: 40px;
+      @media (max-width: $screen-xs) {
+        font-size: 18px;
+        line-height: 28px;
+      }
+      .case {
+        @include serif-text($regular, 43px, 51px);
+        .title-metadata {
+          font-weight: bold;
+          color: $light-blue;
+          margin-bottom: 15px;
+          @include sans-serif($regular, 12px, 12px);
+        }
+        .resource-type {
+          border: 0.5px solid $light-blue;
+          padding: 4px 20px;
+          margin-right: 10px;
+        }
+        .year {
+          @include sans-serif($regular, 22px, 12px);
+        }
+      }
+
+    }
+
+    .subtitle {
+      color: $light-blue;
+      font-weight: 200;
+      margin: 12px 2px;
+      font-size: 24px;
+      @media (max-width: $screen-xs) {
+        font-size: 18px;
+      }
+    }
+
+    .breadcrumbs {
+      font-size: 16px;
+      font-weight: bold;
+      color: $dark-gray;
+      line-height: 20px;
+      margin-bottom: 20px;
+      padding-top: 4px;
+
+      .breadcrumb {
+        display: inline-block;
+
+        color: $light-blue;
+        margin: 8px 0 0 0;
+        padding: 0 8px 0 8px;
+        border: none;
+        &:first-child {
+          margin-left: 0;
+        }
+        &:focus-visible {
+          @include generic-focus-styles;
+        }
+        &.active {
+          color: $dark-gray;
+          font-weight: bold;
+          background-color: transparent !important;
+        }
+        &.is-instructional-material {
+          background-image:url('~static/images/ui/casebook/lock.svg') ;
+          height: 20px;
+          width: 20px;
+          display: inline-block;
+          margin: 0 0 0 10px;
+        }
+      }
+      span.breadcrumb {
+        margin-left: 2px;
+      }
+      .separator {
+        display: inline-block;
+        width: 0;
+        padding: 0;
+        margin-left: -12px;
+        pointer-events: none;
+      }
+
+      .reading-time {
+        float: right;
+        color: $dark-gray;
+        font-size: 14px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  section.headnote {
+    margin: 24px 30px 30px 30px;
+    @include sans-serif($regular, 18px, 31px);
+  }
+
+  section.headnote {
+    h5 {
+      font-size: 14px;
+      margin: 30px 0px 15px 0px;
+    }
+    h3 {
+      @include serif-text($medium, 24px, 27px);
+      margin: 10px 0;
+      color: $orange;
+    }
+    margin-bottom: 24px;
+  }
+  section.resource-search {
+    .tabs .tab {
+      @extend .btn;
+      @include button-variant($black, $white, $white);
+      &.active {
+        border: 1px solid black;
+        border-bottom-color: transparent;
+      }
+    }
+  }
+  input#playlist_name {
+    @include sans-serif($medium, 36px, 36px);
+    padding: 32px 20px 25px;
+  }
+
+  .authorship {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    .collaborators {
+      display: inline-block;
+      .add-collaborator {
+        @include square(20px);
+        display: inline-block;
+        vertical-align: middle;
+
+        color: transparent;
+        background-image: url('~static/images/add-icon.png');
+        background-size: auto;
+      }
+      .user {
+        @include sans-serif($medium, 13px, 13px);
+        font-weight: bold;
+        display: inline-block;
+        width: fit-content;
+
+        @include verified-professor();
+
+      }
+    }
+
+    .root-attribution {
+      font-size: 13px;
+      display: inline-block;
+
+      a:focus-visible {
+        @include generic-focus-styles;
+      }
+    }
+  }
+
+  .link-container{
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  }
+
+  .link-container:hover .link-resource, .link-container a:focus .link-resource {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  }
+
+  .link-container a:focus {
+    outline: none;
+  }
+
+  .link-resource {
+    padding: 24px;
+    background-color: $white;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .link-text-container{
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+  }
+
+  .link-icon{
+    box-shadow: none !important;
+    width: 25px;
+    height: 25px;
+    background-image: url('~static/images/Link.svg');
+  }
+
+  .link-text{
+    box-shadow: none !important;
+    font-size:16px;
+    text-align: center;
+    margin-top: 2px;
+    margin-left: 15px;
+    width:100%;
+  }
+
+  .link-svg{
+    box-shadow: none !important;
+    // width: 40px;
+    display: inline-block;
+    background-color: transparent;
+    border:none;
+    background-image: url('~static/images/ui/casebook/link-go.svg');
+  }
+
+  .table-of-contents, .search-results {
+    .listing-wrapper {
+      position: relative;
+
+      .actions {
+          margin-left: 1rem;
+        > form > input[type=submit], button {
+          // @include square(50px);
+            display: block;
+          margin: 4px 0;
+          color: transparent;
+          background-color: transparent;
+          background-position: 0 center;
+          background-repeat: no-repeat;
+          background-size: auto;
+          &.action-delete {
+            background-image: url('~static/images/ui/edit/elide.png');
+            height: 20px;
+            width: 20px;
+            margin: 0;
+            border-width: 0px;
+            background-color: transparent;
+          }
+          &.action-add-resource {
+            @include sans-serif($bold, 14px, 14px);
+            position: absolute;
+            top: 0;
+            left: -35px;
+            width: 150px;
+            padding-left: 40px;
+            padding-top: 6px;
+
+            background-image: url('~static/images/ui/edit/add.png');
+            &:hover {
+              color: $light-blue;
+            }
+          }
+        }
+      }
+    }
+    .listing {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      margin-top: 6px;
+      border: 1px solid $black;
+
+      &.section {
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        background-color: $black;
+
+        @media (max-width: $screen-xs) {
+          flex-direction: row;
+        }
+
+        .section-title {
+          font-weight: $medium;
+        }
+        .section-number, .section-title {
+          color: $white;
+          margin-right: 10px;
+        }
+      }
+      &.resource {
+        background-color: $white;
+        display: grid;
+        grid-template-columns: auto 1fr 15%;
+
+        @media (max-width: $screen-xs) {
+          padding-right: 0;
+          .resource-container {
+            margin: 0 9px;
+          }
+        }
+
+        .section-title {
+          display: flex;
+          align-items: center;
+        }
+
+        .case-section-title {
+          margin-bottom: 4px;
+        }
+
+        .section-number, .section-title {
+          color: $black;
+        }
+
+        .case-metadata-container {
+          display: flex;
+          align-items: center;
+
+          @media (max-width: $screen-xxs) {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .resource-case:empty {
+            display: none;
+          }
+
+          .resource-case {
+            margin-right: 9px;
+          }
+        }
+
+        .resource-type-container {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+
+          @media (max-width: $screen-xs) {
+            margin-right: -4px;
+
+            .resource-type {
+              padding: 2px 7px;
+            }
+          }
+        }
+      }
+      &.empty {
+        border: 1px dashed $gray;
+        text-align: center;
+        color: $dark-gray;
+        background: transparent;
+        padding: 60px;
+      }
+      &.section:hover, &.section:focus, &.resource:hover, &.resource:focus {
+        background-color: $light-blue;
+        border-color: $light-blue;
+        * {
+          color: $white;
+          border-color: $white;
+        }
+      }
+      @media (max-width: $screen-xs) {
+        &.section, &.resource {
+          div {
+            margin: 4px 0;
+            padding-left: 0;
+            text-align: left;
+          }
+        }
+      }
+      @media (min-width: $screen-xs) {
+        &.section {
+          flex-direction: row;
+          align-items: center;
+        }
+      }
+
+      .section-number {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        margin-right: 10px;
+      }
+      .section-title {
+        @include sans-serif($bold, 14px, 14px);
+        display: inline-block;
+      }
+      .resource-type, .resource-case, .resource-date {
+        @include sans-serif($light, 14px, 14px);
+        display: inline-block;
+
+        text-align: left;
+        color: $black;
+      }
+
+      .resource-type {
+        border: 1px solid $light-blue;
+        color: $light-blue;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 12px;
+        font-weight: bold;
+        height: 20px;
+        width: 72px;
+      }
+    }
+    .section-contents {
+      border-left: 8px solid $light-blue;
+      padding-left: 16px;
+    }
+    .editable {
+      border-left: 8px solid $yellow;
+      padding-left: 16px;
+    }
+  }
+}
+
+.casebook-draft .casebook-inner .table-of-contents, .casebook-draft .casebook-inner .search-results{
+  .listing {
+    padding-right: 42px;
+  }
+  .section, .resource {
+    &:hover, &:focus {
+      background-color: $yellow;
+      border-color: $yellow;
+      * {
+        color: $black;
+        border-color: $black;
+      }
+    }
+  }
+}
+
+#casebook-search {
+  section.casebook-search {
+    background-color:$white;
+    border-top: 1px solid $light-gray;
+    padding: 2rem 4rem 4rem 4rem;
+  }
+
+  .search-bar-container {
+    width: 100%;
+  }
+}
+
+ul.settings-section {
+    list-style: none;
+    background-color: white;
+    ul.transition-state {
+        list-style: none;
+        button {
+            padding: 8px 10px;
+            &.warn-button {
+                background-color: red;
+                color: white;
+                font-weight: bold;
+            }
+        }
+        li {
+            margin-bottom: 1rem;
+            display:table;
+            div {
+                display: table-cell;
+                padding: 1rem;
+                vertical-align: middle;
+            }
+        }
+    }
+
+    > li {
+        padding: 20px;
+        border-bottom: 1px solid black;
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+}
+
+
+.collaborator-list {
+    padding: 4px;
+    table {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        tr {
+            td,th {
+                padding:6px;
+                &.centered {
+                    text-align:center;
+                }
+            }
+        }
+    }
+}
+
+.form-control.force-min-width {
+    min-width: 600px;
+}
+.autocomplete-result-list {
+    list-style: none;
+    border: 1px solid black;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top: 0px solid transparent;
+    background-color: white;
+    padding-left: 0px;
+    li {
+        padding: 8px;
+        &:hover {
+            background-color: light-blue;
+        }
+        &.focused {
+            padding: 4px;
+            border: 4px solid #66afe9;;
+        }
+        &:not(:last-child) {
+            border-bottom: 1px solid grey;
+            &.focused {
+                border-bottom: 4px solid #66afe9;
+            }
+        }
+    }
+}
+
+.collaborator-list {
+    padding: 4px;
+    table {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        tr {
+            .left-adjusted {
+                width: 2rem;
+                margin-left: -3rem;
+                position: fixed;
+                margin-top: -0.25rem;
+            }
+            td,th {
+                padding:6px;
+                &.centered {
+                    text-align:center;
+                }
+            }
+            &.modified {
+                span.modified-alert {
+                    background-color: $yellow;
+                    border-radius: 2rem;
+                    font-weight: 900;
+                    font-size: large;
+                    padding: 0.5rem 1rem;
+                    cursor: help;
+                    vertical-align: baseline;
+                 }
+            }
+        }
+    }
+}
+
+  .inline-btn {
+    height: 52px;
+    vertical-align: baseline;
+    margin-top: -4px;
+    padding-top: 16px;
+  }
+.form-control.force-min-width {
+    min-width: 600px;
+}
+
+
+div.tox-toolbar__group {
+    outline: 2px solid red;
+}
+div.tox-toolbar__group:nth-child(2) button.tox-tbtn.tox-tbtn--select.tox-tbtn--disabled span{
+
+    color: black;
+
+    &:after {
+        content: '✓';
+        color: green;
+        font-weight: 900;
+    }
+}
+
+
+.history-body {
+  background-color: white;
+  padding: 2rem;
+  .history-list {
+    list-style: none;
+    .history-date {
+      font-size: large;
+    }
+    > li {
+      padding-top: 1rem;
+
+    }
+    ul {
+      list-style: none;
+    }
+  }
+}
+
+.casebook-copyright-notice {
+  margin-top: 4rem;
+}

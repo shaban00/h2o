@@ -1,0 +1,83 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+        POSTGRES_DB: ${DATABASE_NAME}
+        POSTGRES_USER: ${DATABASE_USERNAME}
+        POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+        - "54320:5432"
+    volumes:
+        - h2o:/var/lib/postgresql/data
+    networks:
+        - h2o
+    restart: unless-stopped
+ 
+  web:
+    build: .
+    container_name: h2o
+    ports:
+        - "8000:8000"
+    depends_on:
+        - db
+    environment:
+        APP_CONFIG: ${APP_CONFIG}
+    volumes:
+      - ./web:/app
+    networks:
+        - h2o
+    restart: unless-stopped
+
+  minio:
+    image: registry.lil.tools/minio/minio:RELEASE.2021-02-19T04-38-02Z
+    container_name: minio
+    command:
+      - "server"
+      - "/data"
+    environment:
+      - MINIO_ACCESS_KEY=accesskey
+      - MINIO_SECRET_KEY=secretkey
+      - DATA_DIR=/data
+      - BUCKET=h2o.images
+      - EXPORT_BUCKET=h2o.exports
+      - PDF_EXPORT_BUCKET=h2o.pdf_exports
+    volumes:
+      - ./docker/minio/entrypoint.sh:/entrypoint.sh
+      - h2o-minio:/data:delegated
+    ports:
+      - "9000:9000"
+    extra_hosts:
+      - "opencasebook.minio.test:127.0.0.1"
+    networks:
+      h2o:
+        aliases:
+          - 'opencasebook.minio.test'
+    restart: unless-stopped
+
+  pandoc-lambda:
+    image: registry.lil.tools/harvardlil/h2o-pandoc-lambda:0.66-f4ef497565cd325e6161cb6b0dafe814
+    tty: true
+    environment:
+      - USE_S3_CREDENTIALS=True
+      - AWS_ACCESS_KEY_ID=accesskey
+      - AWS_SECRET_ACCESS_KEY=secretkey
+      - S3_ENDPOINT_URL=http://minio:9000
+      - EXPORT_BUCKET=h2o.exports
+    networks:
+        - h2o
+    restart: unless-stopped
+
+
+volumes:
+  h2o:
+    name: h2o
+    driver: local
+
+  h2o-minio:
+    name: h2o-minio
+    driver: local
+
+networks:
+  h2o:
+    name: h2o
+    driver: bridge

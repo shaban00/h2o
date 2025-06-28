@@ -1,0 +1,74 @@
+{% load static %}{% load render_bundle from webpack_loader %}<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block prepend_to_head %}{% endblock %}
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <meta charset="utf-8"/>
+    <title>{% block page_title %}{{ page_title|default:"Open Casebooks" }}{% endblock %} | H2O</title>
+    <link rel="icon" href="#" type="image/png"/>
+    <link href="{% static "images/favicon.ico" %}" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+    <script>
+     {# frontend_urls is set by config.context_processors.frontend_urls #}
+     const FRONTEND_URLS = {{ frontend_urls | safe}};
+     window.ENABLE_MEDIA_UPLOAD =  {% if request.user.is_superuser or request.user.verified_professor or request.user.groups.all.0.name == "Research Assistant" %}true{% else %}false{% endif %};
+     window.VERIFIED = {% if request.user.verified_professor %}true{% else %}false{% endif %};
+    </script>
+    
+    {% include "includes/sentry.html" %}
+    {% render_bundle 'main' %}
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lora|Sorts+Mill+Goudy"/>
+    <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"/>
+    {% render_bundle 'chunk-common' %}
+    {% render_bundle 'vue_app' %}
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class=""> <!--need parameter here for class based on view? -->
+      <div id="app">
+    <div id="non-modal">
+      <a href="#main" class="skip-link">Skip to main content</a>
+      <a href="#footer" class="skip-link">Skip to footer</a>
+      <div class="modal-overlay"></div> <!--bizarrely, something is swapping out the class overlay -> modal-overlay in the Rails app... to be investigated -->
+      {% include 'includes/announcement_banner.html' %}
+      {% block banner %}{% endblock banner %}
+      <header id="main-header">
+        {% include 'includes/header.html' %}
+      </header>
+      <main>
+        {% block custom_skip_target %}<p id="main" tabindex="-1" class="sr-only">Main Content</p>{% endblock %}
+        {% if request.user.is_superuser %}
+          <section class="flash">
+            <div class="content">
+              <div class="flash-admin flash-message">
+                Admin Mode
+              </div>
+            </div>
+          </section>
+        {% endif %}
+        {% if messages %}
+          <section class="flash">
+            <div class="content">
+              {% for message in messages %}
+                <div class="flash-message flash-{% if message.tags %}{{ message.tags }}{% endif %}">{{ message|safe }}</div>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+        {% if nested_layout %}
+          {% block nestedLayout %}{% endblock %}
+        {% else %}
+          {% block mainContent %}{% endblock %}
+        {% endif %}
+      </main>
+      <footer id="main-footer">
+          <p id="footer" tabindex="-1" class="sr-only">Footer</p>
+          {% include 'includes/footer.html' %}
+      </footer>
+    </div>
+    <portal-target name="modal-target"></portal-target>
+      </div>
+      {% block extra_foot %}{% endblock %}
+      {% render_bundle 'application' %}
+      {% include 'includes/analytics.html' %}
+
+  </body>
+</html>

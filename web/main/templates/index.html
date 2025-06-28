@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block mainContent %}
+<section class="hero">
+  <div class="content">
+      <h1><em>Build a better casebook.</em></h1>
+      <h2>H2O helps law faculty create high quality, open-licensed digital textbooks for free.</h2>
+      <a class="call-to-action" href="{% url 'featured' %}">View featured books</a>
+  </div>
+</section>
+<section class="preview">
+  <div class="content">
+    <div class="layout">
+      <div class="features">
+          <section>
+            <h2>Simple to use</h2>
+            <p>Collect materials, hide and annotate text, and distribute casebooks to your students quickly and reliably. H2O is easy to add to your class.</p>
+          </section>
+          <section>
+            <h2>Free</h2>
+            <p>Students spend thousands of dollars on textbooks during law school. Free casebooks make education more accessible and equitable.</p>
+          </section>
+          <section>
+            <h2>Open Access</h2>
+            <p>All materials in H2O are Creative Commons licensed for sharing and re-use, making it easy for professors to build off of each others’ work.</p>
+          </section>
+          <section>
+            <h2>Library-Powered</h2>
+            <p>H2O is made by the Harvard Law School Library and designed carefully to serve faculty and student needs while supporting access for all.</p>
+          </section>
+            <section>
+              <div class="link"><a class="call-to-action" href="{{ GUIDE_URL }}">Help Guide</a></div>
+            </section>
+      </div>
+      <div class="screenshot">
+        <div class="image-wrapper"><img src="{% static "images/landing-demo.png" %}" alt="a screenshot of an example case" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="endorsements">
+  <div class="content">
+    <h1>Featured Faculty Authors</h1>
+    <div class="layout">
+        <div class="endorser">
+          <div class="photo"><img src="{% static "images/endorsers/zittrain.png" %}" alt="Headshot of Jonathan Zittrain"/></div>
+          <div class="name">Professor Jonathan Zittrain</div>
+          <div class="institution">Harvard Law School</div>
+          <div class="link"><a href="{% url 'casebook' 2566 %}">Torts</a>
+          </div>
+        </div>
+        <div class="endorser">
+          <div class="photo"><img src="{% static "images/endorsers/suk-gersen.png" %}" alt="Headshot of Jeannie Suk Gersen"/></div>
+          <div class="name">Professor Jeannie Suk Gersen</div>
+          <div class="institution">Harvard Law School</div>
+          <div class="link"><a href="{% url 'casebook' 2459 %}">Criminal Law</a></div>
+        </div>
+        <div class="endorser">
+          <div class="photo"><img src="{% static "images/endorsers/quinn.png" %}" alt="Headshot of Brian Quinn"/></div>
+          <div class="name">Professor Brian Quinn</div>
+          <div class="institution">Boston College Law School</div>
+          <div class="link"><a href="{% url 'casebook' 237 %}">An Introduction to the Law of Corporations</a></div>
+        </div>
+        <div class="endorser">
+          <div class="photo"><img src="{% static "images/endorsers/fried2.png" %}" alt="Headshot of Charles Fried"/></div>
+          <div class="name">Professor Charles Fried</div>
+          <div class="institution">Harvard Law School</div>
+          <div class="link"><a href="{% url 'casebook' 415 %}">Contracts Law</a></div>
+        </div>
+        <div class="endorser">
+          <div class="photo"><img src="{% static "images/endorsers/cohen.png" %}"  alt="Headshot of Glenn Cohen"/></div>
+          <div class="name">Professor I. Glenn Cohen</div>
+          <div class="institution">Harvard Law School</div>
+          <div class="link"><a href="{% url 'casebook' 5196 %}">Civil Procedure</a></div>
+        </div>
+        <div class="endorser">
+          <div class="photo"><img src="{% static "images/endorsers/modirzadeh.png" %}" alt="Headshot of Naz Modirzadeh"/></div>
+          <div class="name">Professor Naz Modirzadeh</div>
+          <div class="institution">Harvard Law School</div>
+          <div class="link"><a href="{% url 'casebook' 45698 %}">International Humanitarian Law / Laws of War</a></div>
+        </div>
+    </div>
+    <div class="testimonial">
+      <div class="quote">H2O's open source platform has transformed the way I teach corporate law.</div>
+      <div class="source">Professor Brian Quinn, Boston College Law School</div>
+    </div>
+  </div>
+</section>
+<section class="stinger">
+    <img src="{% static "images/logo.svg" %}" title="H2O"/>
+    <h1>Build coursebooks better, faster and smarter — today.</h1>
+    <a class="call-to-action" href="{% url "sign_up" %}">Get started</a>
+</section>
+{% endblock %}

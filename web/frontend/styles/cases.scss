@@ -1,0 +1,63 @@
+@import 'font-vars-and-mixins';
+
+.legal-doc-header {
+    background-color: $white;
+    padding: 24px 32px 10px 32px;
+    @include serif-text($bold, 14px, 18px);
+    line-height:unset;
+}
+
+.case-header {
+    background-color: white;
+
+    .title,
+    .citation,
+    .decisiondate,
+    .docketnumber,
+    .court {
+        text-align:center;
+    }
+    .citation,
+    .decisiondate,
+    .docketnumber,
+    .court {
+        letter-spacing: 1px;
+        padding: 4px;
+    }
+    .court {
+        font-size:24px;
+    }
+    .citation,
+    .decisiondate,
+    .docketnumber {
+        font-size: 18px;
+    }
+    .title {
+        @include serif-text($bold, 27px, 33px);
+        padding: 20px 4px 10px 4px;
+    }
+}
+
+.case-text {
+    .parties,
+    .decisiondate,
+    .docketnumber,
+    .citations,
+    .syllabus,
+    .synopsis,
+    .court {
+        display:none;
+    }
+    .page-label {
+        display: none;
+    }
+
+    aside.footnote > a {
+        float: left;
+    }
+    img {
+        max-width: 100%;
+        width: auto;
+        height: auto;
+    }
+}

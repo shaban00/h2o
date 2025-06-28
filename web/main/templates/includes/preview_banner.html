@@ -1,0 +1,36 @@
+{% if editing %}
+    <div class="{{casebook_color_class}} banner">
+        <div class="banner-inner">
+            {% if casebook.is_draft %}
+                This casebook is a draft and is visible only to collaborators.
+            {% elif casebook.has_draft %}
+                This casebook <a href="{{casebook.draft.get_edit_url}}">has a draft</a>, but you are editing the original.
+            {% elif casebook.is_private %}
+                You are viewing a private casebook.
+            {% endif %}
+        </div>
+    </div>
+{% elif casebook.is_archived %}
+    <div class="casebook-archived banner">
+        <div class="non-edit-inner-banner">
+            You are viewing an archived casebook.
+        </div>
+    </div>
+{% elif casebook.is_draft or casebook.is_private %}
+    <div class="{{casebook_color_class}} banner">
+        <div class="banner-inner">
+            {% if casebook.is_draft %}
+                You are viewing a preview of your changes.
+            {% elif casebook.is_private %}
+                You are viewing a private casebook.
+            {% endif %}
+        </div>
+    </div>
+{% elif casebook.is_outdated %}
+    <div class="casebook-archived banner">
+        <div class="non-edit-inner-banner">
+            You are viewing an old edition of a casebook. <a href="{{ casebook.current_edition.view_url }}"> View the current edition here.</a>
+        </div>
+    </div>
+{% endif %}
+

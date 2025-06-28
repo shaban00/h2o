@@ -1,0 +1,148 @@
+{% if not results.object_list %}
+  <div class="no-results">No results found</div>
+{% else %}
+  <div class="results-list">
+    {% for result in results %}
+      {% if category == 'casebook' %}
+        <a href="{% url 'casebook' result.result_id %}" class="wrapper" data-result-id="{{ result.result_id }}">
+          <div class="results-entry">
+            <div class="title">
+              {{ result.metadata.title }}
+            </div>
+            <div class="owner">
+              {% if result.metadata.attribution %}
+                <div class="user verified"></div>
+                {{ result.metadata.attribution }}
+              {% endif %}
+            </div>
+            <div class="date">
+              {{ result.metadata.created_at|slice:"0:4" }}
+            </div>
+            {% if result.metadata.description %}
+              <div class="description">
+                {{ result.metadata.description }}
+              </div>
+            {% endif %}
+          </div>
+        </a>
+      {% elif category == 'textblock' %}
+        <a href="{% url 'resource' casebook.id result.metadata.ordinals %}" class="wrapper" data-result-id="{{ result.result_id }}">
+          <div class="fts-results-entry">
+            <div class="title">
+              {{ result.metadata.name }}
+            </div>
+            <div class="owner">
+            </div>
+            <div class="ordinals">
+                {{ result.metadata.ordinals }}
+            </div>
+            {% if result.metadata.headlines|length > 1%}
+              <div class="description">
+                 {% autoescape off %}
+                 {% for headline in result.metadata.headlines|slice:"0:4" %}
+                   ...
+                   {{ headline }}
+                  {% endfor %}
+                   ...
+                 {% endautoescape %}
+                 {% if result.metadata.headlines|length > 3 %}
+                  <span class="and-more">
+                    and {% if result.metadata.headlines|length|add:"-3" < 10 %} {{ result.metadata.headlines|length|add:"-3" }} {% else %} many {% endif %} more.
+                  </span>
+                 {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </a>
+      {% elif category == 'link' %}
+        <a href="{% url 'resource' casebook.id result.metadata.ordinals %}" class="wrapper" data-result-id="{{ result.result_id }}">
+          <div class="fts-results-entry">
+            <div class="title">
+              {{ result.metadata.name }}
+            </div>
+            <div class="ordinals">
+                {{ result.metadata.ordinals }}
+            </div>
+            <div class="subtitle">
+              {{ result.metadata.url }}
+            </div>
+            {% if result.metadata.headlines|length > 1 %}
+              <div class="description">
+                 {% autoescape off %}
+                 {% for headline in result.metadata.headlines|slice:"0:4" %}
+                   ...
+                   {{ headline }}
+                  {% endfor %}
+                   ...
+                 {% endautoescape %}
+                 {% if result.metadata.headlines|length > 3 %}
+                  <span class="and-more">
+                    and {% if result.metadata.headlines|length|add:"-3" < 10 %} {{ result.metadata.headlines|length|add:"-3" }} {% else %} many {% endif %} more.
+                  </span>
+                 {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </a>
+      {% elif category == 'legal_doc' %}
+          <a href="{% url 'display_legal_doc' result.result_id %}" class="wrapper" data-result-id="{{ result.result_id }}">
+            <div class="results-entry">
+              <div class="title">
+                {{ result.metadata.display_name }}
+              </div>
+              <div class="citation">
+                {{ result.metadata.citations }}
+              </div>
+              <div class="date">
+                {{ result.metadata.effective_date_formatted|default:'' }}
+              </div>
+            </div>
+          </a>
+      {% elif category == 'legal_doc_fulltext' %}
+          <a href="{% url 'resource' casebook.id result.metadata.ordinals %}" class="wrapper" data-result-id="{{ result.result_id }}">
+            <div class="fts-results-entry">
+              <div class="title">
+                {{ result.metadata.display_name }}
+              </div>
+              <div class="ordinals">
+                {{ result.metadata.ordinals }}
+              </div>
+              <div class="subtitle">
+                {{ result.metadata.citations.0 }} {% if result.metadata.year %}({{ result.metadata.year }}){% endif %}
+              </div>
+              {% if result.metadata.headlines|length > 1%}
+                <div class="description">
+                   {% autoescape off %}
+                     {% for headline in result.metadata.headlines|slice:"0:4" %}
+                      ...
+                       {{ headline }}
+                      {% endfor %}
+                      ...
+                   {% endautoescape %}
+                   {% if result.metadata.headlines|length > 3 %}
+                    <span class="and-more">
+                      and {% if result.metadata.headlines|length < 10 %} {{ result.metadata.headlines|length }} {% else %} many {% endif %} more.
+                    </span>
+                   {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </a>
+      {% elif category == 'user' %}
+        <a href="{% url 'dashboard' result.result_id %}" class="wrapper" data-result-id="{{ result.result_id }}">
+          <div class="results-entry">
+            {# skipping the profile image here, which does not seem to be in use #}
+            {# <div class="profile-image"></div> #}
+            <div class="title">
+              {{ result.metadata.attribution }}
+            </div>
+            <div class="casebook-count">
+              {{ result.metadata.casebook_count }} casebook{{ result.metadata.casebook_count|pluralize }}
+            </div>
+          </div>
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% include 'search/pagination.html' %}
+{% endif %}
