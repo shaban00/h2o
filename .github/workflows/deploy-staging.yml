@@ -55,24 +55,21 @@ jobs:
           # Get the existing task definition
           aws ecs describe-task-definition --task-definition $TASK_DEFINITION_FAMILY --query "taskDefinition" > task-definition.json
 
-          # Clean the JSON to remove invalid fields
-          cat task-definition.json | jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .compatibilities)' > new-task-def.json
+          # Clean up the JSON by removing invalid fields
+          jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy, .compatibilities)' task-definition.json > new-task-def.json
 
-          # Print to debug the content
-          cat new-task-def.json
+          # Update the image and container name, write output to updated-task-def.json
+          jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG" --arg CONTAINER_NAME "$CONTAINER_NAME" \
+            '.containerDefinitions[].image = $IMAGE | .containerDefinitions[].name = $CONTAINER_NAME' new-task-def.json > updated-task-def.json
 
-          # Update the image and container name
-          cat new-task-def.json | jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG" --arg CONTAINER_NAME "$CONTAINER_NAME" \
-            '.containerDefinitions[].image = $IMAGE | .containerDefinitions[].name = $CONTAINER_NAME' > new-task-def.json
-
-          # Print to debug the content after modification
-          cat new-task-def.json
+          # Output updated task definition to debug
+          cat updated-task-def.json
 
       - name: Register new ECS task definition
         id: register-task-def
         run: |
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://new-task-def.json \
+            --cli-input-json file://updated-task-def.json \
             --query "taskDefinition.taskDefinitionArn" --output text)
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
 
