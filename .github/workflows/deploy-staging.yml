@@ -101,6 +101,9 @@ jobs:
           NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
           aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN
 
+          # Wait 15 seconds to ensure the task is fully ready
+          sleep 15
+
           aws ecs execute-command \
             --cluster $ECS_CLUSTER \
             --task $NEW_TASK_ARN \
