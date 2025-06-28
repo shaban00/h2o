@@ -93,8 +93,7 @@ jobs:
             --task $NEW_TASK_ARN \
             --container $CONTAINER_NAME \
             --interactive \
-            --command "python manage.py migrate" \
-            > /dev/null 2>&1
+            --command "python manage.py migrate"
 
       - name: Refresh Search & FTS Indexes
         run: |
