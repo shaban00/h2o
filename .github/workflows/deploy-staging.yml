@@ -72,6 +72,8 @@ jobs:
             --cli-input-json file://updated-task-def.json \
             --query "taskDefinition.taskDefinitionArn" --output text)
 
+          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
+
       - name: Update ECS Service
         run: |
           aws ecs update-service \
