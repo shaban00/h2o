@@ -78,8 +78,8 @@ jobs:
             --force-new-deployment \
             > /dev/null 2>&1
 
-      - name: Wait for 180 seconds after ECS Service update
-        run: sleep 180
+      - name: Wait for new ECS tasks to be running
+        run: sleep 200
 
       # - name: Wait for ECS task to be running and execute migration
       #   run: |
@@ -118,10 +118,11 @@ jobs:
           # Get the first (newest) task ARN from the list
           NEW_TASK_ARN=$(echo $NEW_TASKS | awk '{print $1}')
 
-          echo $NEW_TASK_ARN
-
           # Wait for the new task to be running
-          aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN          
+          aws ecs wait tasks-running \
+            --cluster $ECS_CLUSTER \
+            --service-name $ECS_SERVICE \
+            --tasks $NEW_TASK_ARN          
 
           # Execute Django migration command on the new task
           aws ecs execute-command \
