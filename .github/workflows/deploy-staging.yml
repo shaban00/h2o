@@ -32,6 +32,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.STAGING_AWS_REGION }}
 
+
       - name: Put site into Maintenance mode
         run: |
           aws elbv2 modify-listener \
@@ -39,15 +40,18 @@ jobs:
             --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$(aws elbv2 describe-target-groups --names $TARGET_GROUP --query 'TargetGroups[0].TargetGroupArn' --output text),Weight=0},{TargetGroupArn=$(aws elbv2 describe-target-groups --names $MAINTENANCE_TARGET_GROUP --query 'TargetGroups[0].TargetGroupArn' --output text),Weight=100}]}" \
             > /dev/null 2>&1
 
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
 
       - name: Build and Push Docker image
         run: |
           docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
           docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
 
       - name: Create new ECS task definition
         run: |
@@ -61,6 +65,7 @@ jobs:
           jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:$IMAGE_TAG" --arg CONTAINER_NAME "$CONTAINER_NAME" \
             '.containerDefinitions[].image = $IMAGE | .containerDefinitions[].name = $CONTAINER_NAME' new-task-def.json > updated-task-def.json
 
+
       - name: Register new ECS task definition
         run: |
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
@@ -68,6 +73,7 @@ jobs:
             --query "taskDefinition.taskDefinitionArn" --output text)
 
           echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
+
 
       - name: Update ECS Service
         run: |
@@ -78,17 +84,17 @@ jobs:
             --force-new-deployment \
             > /dev/null 2>&1
 
-      - name: Wait for new ECS tasks to be running
+
+      - name: Wait for new deployment to start
         run: |
-          # Get running tasks and multiply by 120 seconds
-          RUNNING_TASKS=$(aws ecs describe-services \
+          sleep 15
+
+
+      - name: Wait for new deployment to complete
+        run: |
+          aws ecs wait services-stable \
             --cluster $ECS_CLUSTER \
-            --services $ECS_SERVICE \
-            --query "services[0].runningCount")
-
-          echo $RUNNING_TASKS
-
-          sleep 200
+            --services $ECS_SERVICE
 
 
       - name: Wait for ECS task to be running and execute migration
