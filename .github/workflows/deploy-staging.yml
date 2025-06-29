@@ -78,13 +78,49 @@ jobs:
             --force-new-deployment \
             > /dev/null 2>&1
 
-      - name: Wait for 30 seconds after ECS Service update
-        run: sleep 60
+      - name: Wait for 120 seconds after ECS Service update
+        run: sleep 120
+
+      # - name: Wait for ECS task to be running and execute migration
+      #   run: |
+      #     NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
+          
+      #     aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN          
+
+      #     # Execute Django migration command on the new task
+      #     aws ecs execute-command \
+      #       --cluster $ECS_CLUSTER \
+      #       --task $NEW_TASK_ARN \
+      #       --container $CONTAINER_NAME \
+      #       --interactive \
+      #       --command "python manage.py migrate" \
+      #       > /dev/null 2>&1
+
+      #     # Run custom commands to refresh search and FTS indexes
+      #     aws ecs execute-command \
+      #       --cluster $ECS_CLUSTER \
+      #       --task $NEW_TASK_ARN \
+      #       --container $CONTAINER_NAME \
+      #       --interactive \
+      #       --command "invoke refresh-search-index && invoke refresh-fts-index" \
+      #       > /dev/null 2>&1
 
       - name: Wait for ECS task to be running and execute migration
         run: |
-          NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
-          
+          # Fetch the tasks associated with the updated ECS service
+          NEW_TASKS=$(aws ecs list-tasks \
+            --cluster $ECS_CLUSTER \
+            --service-name $ECS_SERVICE \
+            --desired-status RUNNING \
+            --query "taskArns" \
+            --output text)
+
+          # Get the first (newest) task ARN from the list
+          NEW_TASK_ARN=$(echo $NEW_TASKS | awk '{print $1}')
+
+          echo $NEW_TASK_ARN
+
+          # Wait for the new task to be running
           aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN          
 
           # Execute Django migration command on the new task
