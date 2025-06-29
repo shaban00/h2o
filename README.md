@@ -1,7 +1,6 @@
 # h2o
 
-> h2o is open-source software designed to replace bulky and expensive law textbooks with an easy-to-use web interface
->where instructors and students alike can author, organize, view and print public-domain course material.
+> h2o is open-source software designed to replace bulky and expensive law textbooks with an easy-to-use web interface where instructors and students alike can author, organize, view and print public-domain course material.
 
 [![test status](https://github.com/harvard-lil/h2o/actions/workflows/tests.yml/badge.svg)](https://github.com/harvard-lil/h2o/actions)
 [![codecov](https://codecov.io/gh/harvard-lil/h2o/branch/develop/graph/badge.svg)](https://codecov.io/gh/harvard-lil/h2o)
@@ -32,13 +31,13 @@ If the H2O team has provided you with a pg_dump file, seed the database with dat
 
 visit <http://opencasebook.test:8000> or visit <http://localhost:8000>
 
-### Connect to running container
-
-    docker compose exec web bash
-
 ### Frontend assets
 
 Frontend assets live in `frontend/` and are compiled with vue-cli. If you want to run frontend assets:
+
+Connect to running container:
+
+    docker compose exec web bash
 
 Install requirements:
 
