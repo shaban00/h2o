@@ -86,7 +86,9 @@ jobs:
             --services $ECS_SERVICE \
             --query "services[0].runningCount")
 
-          sleep 120 * $RUNNING_TASKS
+          echo $RUNNING_TASKS
+
+          sleep 200
 
 
       - name: Wait for ECS task to be running and execute migration
