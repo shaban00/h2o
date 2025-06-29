@@ -80,6 +80,7 @@ jobs:
 
       - name: Wait for new ECS tasks to be running
         run: |
+          # Get running tasks and multiply by 120 seconds
           RUNNING_TASKS=$(aws ecs describe-services \
             --cluster $ECS_CLUSTER \
             --services $ECS_SERVICE \
