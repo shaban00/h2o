@@ -78,7 +78,8 @@ jobs:
             --force-new-deployment \
             > /dev/null 2>&1
 
-          sleep 15
+      - name: Wait for 30 seconds after ECS Service update
+        run: sleep 60
 
       - name: Wait for ECS task to be running and execute migration
         run: |
