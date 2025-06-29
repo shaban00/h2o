@@ -15,15 +15,17 @@ Add the following to `/etc/hosts`:
 
     127.0.0.1 opencasebook.test opencasebook.minio.test
 
-### Spin up some containers
+### Spin up docker containers
+
+Rename environment variable file:
+
+    mv .env.example .env
 
 Start up the Docker containers in the background:
 
     docker compose up -d
 
-The first time this runs it will build the Docker images, which
-may take several minutes. (After the first time, it should only take
-1-3 seconds.)
+The first time this runs it will build the Docker images, which may take several minutes. (After the first time, it should only take 1-3 seconds.)
 
 If the H2O team has provided you with a pg_dump file, seed the database with data:
 
