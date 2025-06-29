@@ -107,7 +107,7 @@ jobs:
             --query "taskArns" \
             --output text)
 
-          # Get the first (newest) task ARN from the list
+          # Get the first task ARN from the list
           NEW_TASK_ARN=$(echo $NEW_TASKS | awk '{print $1}')
 
           # Wait for the new task to be running
@@ -115,22 +115,13 @@ jobs:
             --cluster $ECS_CLUSTER \
             --tasks $NEW_TASK_ARN          
 
-          # Execute Django migration command on the new task
+          # Execute Django migration & refresh indexes command on the new task
           aws ecs execute-command \
             --cluster $ECS_CLUSTER \
             --task $NEW_TASK_ARN \
             --container $CONTAINER_NAME \
             --interactive \
-            --command "python manage.py migrate" \
-            > /dev/null 2>&1
-
-          # Run custom commands to refresh search and FTS indexes
-          aws ecs execute-command \
-            --cluster $ECS_CLUSTER \
-            --task $NEW_TASK_ARN \
-            --container $CONTAINER_NAME \
-            --interactive \
-            --command "invoke refresh-search-index && invoke refresh-fts-index" \
+            --command "python manage.py migrate && invoke refresh-search-index && invoke refresh-fts-index" \
             > /dev/null 2>&1
 
 
