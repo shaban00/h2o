@@ -121,7 +121,6 @@ jobs:
           # Wait for the new task to be running
           aws ecs wait tasks-running \
             --cluster $ECS_CLUSTER \
-            --service-name $ECS_SERVICE \
             --tasks $NEW_TASK_ARN          
 
           # Execute Django migration command on the new task
