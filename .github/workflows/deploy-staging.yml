@@ -79,31 +79,15 @@ jobs:
             > /dev/null 2>&1
 
       - name: Wait for new ECS tasks to be running
-        run: sleep 200
+        run: |
+          # Get running tasks and multiply by 120 seconds
+          RUNNING_TASKS=$(aws ecs describe-services \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE \
+            --query "services[0].runningCount")
 
-      # - name: Wait for ECS task to be running and execute migration
-      #   run: |
-      #     NEW_TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --desired-status RUNNING --query "taskArns[0]" --output text)
-          
-      #     aws ecs wait tasks-running --cluster $ECS_CLUSTER --tasks $NEW_TASK_ARN          
+          sleep 120 * $RUNNING_TASKS
 
-      #     # Execute Django migration command on the new task
-      #     aws ecs execute-command \
-      #       --cluster $ECS_CLUSTER \
-      #       --task $NEW_TASK_ARN \
-      #       --container $CONTAINER_NAME \
-      #       --interactive \
-      #       --command "python manage.py migrate" \
-      #       > /dev/null 2>&1
-
-      #     # Run custom commands to refresh search and FTS indexes
-      #     aws ecs execute-command \
-      #       --cluster $ECS_CLUSTER \
-      #       --task $NEW_TASK_ARN \
-      #       --container $CONTAINER_NAME \
-      #       --interactive \
-      #       --command "invoke refresh-search-index && invoke refresh-fts-index" \
-      #       > /dev/null 2>&1
 
       - name: Wait for ECS task to be running and execute migration
         run: |
