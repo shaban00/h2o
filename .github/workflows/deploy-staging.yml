@@ -115,13 +115,13 @@ jobs:
             --cluster $ECS_CLUSTER \
             --tasks $NEW_TASK_ARN          
 
-          # Execute django migration & refresh indexes command on the new task
+          # Execute django migration, create search index & create reporting views
           aws ecs execute-command \
             --cluster $ECS_CLUSTER \
             --task $NEW_TASK_ARN \
             --container $CONTAINER_NAME \
             --interactive \
-            --command "python manage.py migrate && invoke refresh-search-index && invoke refresh-fts-index" \
+            --command "python manage.py migrate && invoke create-search-index && invoke create-reporting-views" \
             > /dev/null 2>&1
 
 
