@@ -11,10 +11,8 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Upgrade pip and install build-essential and other dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && pip install --upgrade pip
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip
 
 # Copy the requirements file first (better caching)
 COPY web/requirements.txt /app/
@@ -25,7 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Stage 2: Production stage
 FROM python:3.11-slim
 
-# Install uWSGI without build dependencies
+# Install uWSGI and dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     && pip install uwsgi
@@ -56,4 +54,4 @@ USER h2o
 EXPOSE 8000
 
 # Start the application using uWSGI with similar options to Gunicorn
-CMD ["uwsgi", "--http", "0.0.0.0:8000", "--master", "true", "--processes", "20", "--threads", "1", "--py-autoreload", "1", "--module", "config.wsgi"]
+CMD ["uwsgi", "--http", "0.0.0.0:8000", "--master", "--workers", "20", "--threads", "1", "--py-autoreload", "1", "--module", "config.wsgi"]
