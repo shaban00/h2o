@@ -56,4 +56,4 @@ USER h2o
 EXPOSE 8000
 
 # Start the application using uWSGI with similar options to Gunicorn
-CMD ["uwsgi", "--http", "0.0.0.0:8000", "--workers", "2", "--threads", "4", "--harakiri", "120", "--py-autoreload", "1", "--module", "config.wsgi"]
+CMD ["uwsgi", "--http", "0.0.0.0:8000", "--master", "true", "--processes", "20", "--threads", "1", "--py-autoreload", "1", "--module", "config.wsgi"]
