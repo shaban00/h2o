@@ -23,9 +23,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Stage 2: Production stage
 FROM python:3.11-slim
 
-# Install uWSGI and dependencies
+# Install dependencies to build uWSGI
 RUN apt-get update && apt-get install -y \
     build-essential \
+    libpcre3 \
+    libpcre3-dev \
     && pip install uwsgi
 
 # Create a non-root user and set up permissions
