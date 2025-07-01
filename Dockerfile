@@ -48,4 +48,6 @@ USER h2o
 EXPOSE 8000 
  
 # Start the application using Gunicorn
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers=2", "--threads=4", "--worker-class=gthread", "--timeout=120", "--reload"]
+# CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers=2", "--threads=4", "--worker-class=gthread", "--timeout=120", "--reload"]
+
+CMD ["uwsgi", "--http", "0.0.0.0:8000", "--workers", "2", "--threads", "4", "--harakiri", "120", "--py-autoreload", "1", "--module", "config.wsgi"]
