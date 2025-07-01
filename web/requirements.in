@@ -60,4 +60,3 @@ sentry-sdk
 
 # web server
 gunicorn
-uwsgi
