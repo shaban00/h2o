@@ -33,10 +33,6 @@ DATABASES = {
         "PASSWORD": config["DATABASE_PASSWORD"],
         "HOST": config["DATABASE_HOST"],
         "PORT": config["DATABASE_PORT"],
-        "OPTIONS": {
-            "sslmode": "verify-full",
-            "sslrootcert": "/usr/local/share/ca-certificates/global-bundle.pem"
-        }
     }
 }
 CAPAPI_API_KEY = config["CAPAPI_API_KEY"]
