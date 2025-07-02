@@ -1,5 +1,5 @@
 # Stage 1: Base build stage
-FROM python:3.11-slim AS builder
+FROM python:3.11-bookworm AS builder
 
 # Create the app directory
 RUN mkdir /app
@@ -21,7 +21,7 @@ COPY web/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Production stage
-FROM python:3.11-slim
+FROM python:3.11-bookworm
 
 # Install dependencies to build uWSGI
 RUN apt-get update && apt-get install -y \
