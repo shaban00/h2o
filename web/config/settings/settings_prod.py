@@ -12,12 +12,12 @@ CSRF_COOKIE_SECURE = True
 # logging
 LOGGING["loggers"] = {
     "django": {
-        "handlers": ["file", "mail_admins"],
+        "handlers": ["console", "file", "mail_admins"],
         "level": "INFO",
         "propagate": True,
     },
     "django.request": {
-        "handlers": ["mail_admins"],
+        "handlers": ["console", "mail_admins"],
         "level": "ERROR",
         "propagate": False,
     },
