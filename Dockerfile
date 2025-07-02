@@ -34,13 +34,6 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -m -r h2o && \
     mkdir /app && \
     chown -R h2o /app
-
-
-# Copy the global-bundle.pem certificate to the container's CA certificates folder
-COPY web/global-bundle.pem /usr/local/share/ca-certificates/global-bundle.pem
-
-# Update CA certificates (to trust the new one)
-RUN update-ca-certificates
   
 # Copy the Python dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
