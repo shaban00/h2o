@@ -1,5 +1,5 @@
 # Stage 1: Base build stage
-FROM registry.lil.tools/library/python:3.11-bookworm AS builder
+FROM python:3.13-bookworm AS builder
 
 # Create the app directory
 RUN mkdir /app
@@ -21,7 +21,7 @@ COPY web/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Production stage
-FROM registry.lil.tools/library/python:3.11-bookworm
+FROM python:3.13-bookworm
 
 # Install dependencies to build uWSGI
 RUN apt-get update && apt-get install -y \
@@ -35,8 +35,15 @@ RUN useradd -m -r h2o && \
     mkdir /app && \
     chown -R h2o /app
 
+
+# Copy the global-bundle.pem certificate to the container's CA certificates folder
+COPY web/global-bundle.pem /usr/local/share/ca-certificates/global-bundle.pem
+
+# Update CA certificates (to trust the new one)
+RUN update-ca-certificates
+  
 # Copy the Python dependencies from the builder stage
-COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
+COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Set the working directory

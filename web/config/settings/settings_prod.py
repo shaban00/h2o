@@ -33,6 +33,10 @@ DATABASES = {
         "PASSWORD": config["DATABASE_PASSWORD"],
         "HOST": config["DATABASE_HOST"],
         "PORT": config["DATABASE_PORT"],
+        "OPTIONS": {
+            "sslmode": "verify-full",
+            "sslrootcert": "/usr/local/share/ca-certificates/global-bundle.pem"
+        }
     }
 }
 CAPAPI_API_KEY = config["CAPAPI_API_KEY"]
@@ -62,7 +66,7 @@ AWS_LAMBDA_EXPORT_SETTINGS = {
     "secret_key": S3_STORAGE["secret_key"],
 }
 FORCE_AWS_LAMBDA_EXPORT = True
-USE_SENTRY = False
+USE_SENTRY = config["TIER"] == "prod"
 SENTRY_DSN = config["SENTRY_DSN"]
-SENTRY_ENVIRONMENT = "prod"
+SENTRY_ENVIRONMENT = config["TIER"]
 SENTRY_TRACES_SAMPLE_RATE = 0.001
