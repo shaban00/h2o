@@ -1,5 +1,5 @@
 # Stage 1: Base build stage
-FROM python:3.13-bookworm AS builder
+FROM registry.lil.tools/library/python:3.11-bookworm AS builder
 
 # Create the app directory
 RUN mkdir /app
@@ -21,7 +21,7 @@ COPY web/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Production stage
-FROM python:3.13-bookworm
+FROM registry.lil.tools/library/python:3.11-bookworm
 
 # Install dependencies to build uWSGI
 RUN apt-get update && apt-get install -y \
@@ -36,7 +36,7 @@ RUN useradd -m -r h2o && \
     chown -R h2o /app
   
 # Copy the Python dependencies from the builder stage
-COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
+COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Set the working directory
@@ -60,4 +60,4 @@ USER h2o
 EXPOSE 8000
 
 # Start the application with uwsgi
-CMD ["uwsgi", "--http", "0.0.0.0:8000", "--master", "--processes", "20", "--threads", "1", "--buffer-size", "32768", "--module", "config.wsgi"]
+CMD ["uwsgi", "--http", "0.0.0.0:8000", "--master", "--processes", "20", "--threads", "1", "--plugins", "python311,logfile", "--buffer-size", "32768", "--module", "config.wsgi"]
