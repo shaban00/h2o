@@ -12,6 +12,10 @@ CSRF_COOKIE_SECURE = True
 
 # logging
 LOGGING["loggers"] = {
+    "django.security.DisallowedHost": {
+        "handlers": ["null"],
+        "propagate": False,
+    },
     "django": {
         "handlers": ["console", "file", "mail_admins"],
         "level": "INFO",
@@ -33,7 +37,7 @@ DATABASES = {
         "USER": config["DATABASE_USERNAME"],
         "PASSWORD": config["DATABASE_PASSWORD"],
         "HOST": config["DATABASE_HOST"],
-        "PORT": config["DATABASE_PORT"]
+        "PORT": config["DATABASE_PORT"],
     }
 }
 CAPAPI_API_KEY = config["CAPAPI_API_KEY"]
