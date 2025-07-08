@@ -206,9 +206,6 @@ LOGGING: LoggerConfig = {
             "class": "main.reporter.CustomAdminEmailHandler",
         },
         "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "verbose"},
-        "null": {
-            "class": "logging.NullHandler",
-        },
     },
     "loggers": {
         "django": {

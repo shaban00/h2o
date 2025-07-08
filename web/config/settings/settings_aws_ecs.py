@@ -12,10 +12,6 @@ CSRF_COOKIE_SECURE = True
 
 # logging
 LOGGING["loggers"] = {
-    "django.security.DisallowedHost": {
-        "handlers": ["null"],
-        "propagate": False,
-    },
     "django": {
         "handlers": ["console", "file", "mail_admins"],
         "level": "INFO",
