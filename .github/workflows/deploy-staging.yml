@@ -20,6 +20,7 @@ jobs:
       CONTAINER_NAME: ${{ secrets.STAGING_CONTAINER_NAME }}
       ECS_CLUSTER: ${{ secrets.STAGING_ECS_CLUSTER }}
       ECS_SERVICE: ${{ secrets.STAGING_ECS_SERVICE }}
+      EVENT_RULES: ${{ secrets.STAGING_EVENT_RULES }}
 
     steps:
       - name: Checkout code
@@ -75,6 +76,27 @@ jobs:
             --task-definition $NEW_TASK_DEF_ARN \
             --force-new-deployment \
             > /dev/null 2>&1
+      
+      
+      - name: Update CloudWatch Event Target Task Definition ARN for all event rules
+        run: |
+          # Split the EVENT_RULES secret into an array of event rule names
+          EVENT_RULES_ARRAY=(${{ secrets.EVENT_RULES }})
+
+          # Loop through each event rule
+          for EVENT_RULE in "${EVENT_RULES_ARRAY[@]}"; do
+            echo "Updating event target for rule: $EVENT_RULE"
+            
+            # Get the current target configuration for the rule
+            TARGET_JSON=$(aws events describe-targets-by-rule --rule $EVENT_RULE)
+
+            # Update the TaskDefinitionArn in the JSON
+            UPDATED_JSON=$(echo $TARGET_JSON | jq --arg NEW_TASK_DEF_ARN "$NEW_TASK_DEF_ARN" \
+              '.Targets[0].EcsParameters.TaskDefinitionArn = $NEW_TASK_DEF_ARN')
+
+            # Use the updated JSON to put the target with the new task definition ARN
+            aws events put-targets --rule $EVENT_RULE --targets "$UPDATED_JSON"
+          done
 
 
       - name: Wait for new deployment to start
