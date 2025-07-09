@@ -78,37 +78,6 @@ jobs:
             > /dev/null 2>&1
       
 
-      - name: Update CloudWatch Event Target Task Definition ARN for all event rules
-        run: |
-          # Split the EVENT_RULES environment variable into an array of event rule names
-          IFS=',' read -r -a EVENT_RULES_ARRAY <<< "$EVENT_RULES"
-
-          # Loop through each event rule
-          for EVENT_RULE in "${EVENT_RULES_ARRAY[@]}"; do
-            echo "Updating event target for rule: $EVENT_RULE"
-            
-            # Get the current target configuration for the rule
-            TARGET_JSON=$(aws events list-targets-by-rule --rule $EVENT_RULE)
-
-            # Extract the necessary fields (Id, Arn, RoleArn, Input, EcsParameters) from the existing target JSON
-            TARGET_ID=$(echo $TARGET_JSON | jq -r '.Targets[0].Id')
-            TARGET_ARN=$(echo $TARGET_JSON | jq -r '.Targets[0].Arn')
-            ROLE_ARN=$(echo $TARGET_JSON | jq -r '.Targets[0].RoleArn')
-            INPUT=$(echo $TARGET_JSON | jq -r '.Targets[0].Input')
-            
-            # Update the TaskDefinitionArn in the EcsParameters section
-            UPDATED_TARGET_JSON=$(echo $TARGET_JSON | jq --arg NEW_TASK_DEF_ARN "$NEW_TASK_DEF_ARN" \
-              '.Targets[0].EcsParameters.TaskDefinitionArn = $NEW_TASK_DEF_ARN')
-
-            # Prepare the updated target JSON with the necessary fields
-            FINAL_TARGET_JSON=$(echo $UPDATED_TARGET_JSON | jq -r '[.Targets[0] | {Id, Arn, RoleArn, Input, EcsParameters}]')
-
-            # Put the updated target configuration back into CloudWatch
-            aws events put-targets --rule $EVENT_RULE \
-              --targets "$FINAL_TARGET_JSON"
-          done
-
-
       - name: Wait for new deployment to start
         run: |
           sleep 10
@@ -155,6 +124,29 @@ jobs:
             --interactive \
             --command "python manage.py migrate && invoke create-search-index && invoke create-reporting-views" \
             > /dev/null 2>&1
+
+      
+      - name: Update scheduled tasks with new task definition
+        run: |
+          # Split the EVENT_RULES environment variable into an array of event rule names
+          IFS=',' read -r -a EVENT_RULES_ARRAY <<< "$EVENT_RULES"
+
+          for EVENT_RULE in "${EVENT_RULES_ARRAY[@]}"; do            
+            
+            # Get the current target configuration for the rule
+            TARGET_JSON=$(aws events list-targets-by-rule --rule $EVENT_RULE)
+            
+            # Update the TaskDefinitionArn in the EcsParameters section
+            UPDATED_TARGET_JSON=$(echo $TARGET_JSON | jq --arg NEW_TASK_DEF_ARN "$NEW_TASK_DEF_ARN" \
+              '.Targets[0].EcsParameters.TaskDefinitionArn = $NEW_TASK_DEF_ARN')
+
+            # Prepare the updated target JSON with the necessary fields
+            FINAL_TARGET_JSON=$(echo $UPDATED_TARGET_JSON | jq -r '[.Targets[0] | {Id, Arn, RoleArn, Input, EcsParameters}]')
+
+            # Update target configuration
+            aws events put-targets --rule $EVENT_RULE \
+              --targets "$FINAL_TARGET_JSON"
+          done
 
 
       - name: Turn off Maintenance mode
