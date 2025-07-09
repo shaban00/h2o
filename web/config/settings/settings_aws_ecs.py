@@ -7,6 +7,7 @@ config = json.loads(os.environ["APP_CONFIG"])
 
 DEBUG = False
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
@@ -33,7 +34,7 @@ DATABASES = {
         "USER": config["DATABASE_USERNAME"],
         "PASSWORD": config["DATABASE_PASSWORD"],
         "HOST": config["DATABASE_HOST"],
-        "PORT": config["DATABASE_PORT"]
+        "PORT": config["DATABASE_PORT"],
     }
 }
 CAPAPI_API_KEY = config["CAPAPI_API_KEY"]
