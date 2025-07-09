@@ -90,12 +90,22 @@ jobs:
             # Get the current target configuration for the rule
             TARGET_JSON=$(aws events list-targets-by-rule --rule $EVENT_RULE)
 
-            # Update the TaskDefinitionArn in the JSON
-            UPDATED_JSON=$(echo $TARGET_JSON | jq --arg NEW_TASK_DEF_ARN "$NEW_TASK_DEF_ARN" \
+            # Extract the necessary fields (Id, Arn, RoleArn, Input, EcsParameters) from the existing target JSON
+            TARGET_ID=$(echo $TARGET_JSON | jq -r '.Targets[0].Id')
+            TARGET_ARN=$(echo $TARGET_JSON | jq -r '.Targets[0].Arn')
+            ROLE_ARN=$(echo $TARGET_JSON | jq -r '.Targets[0].RoleArn')
+            INPUT=$(echo $TARGET_JSON | jq -r '.Targets[0].Input')
+            
+            # Update the TaskDefinitionArn in the EcsParameters section
+            UPDATED_TARGET_JSON=$(echo $TARGET_JSON | jq --arg NEW_TASK_DEF_ARN "$NEW_TASK_DEF_ARN" \
               '.Targets[0].EcsParameters.TaskDefinitionArn = $NEW_TASK_DEF_ARN')
 
-            # Use the updated JSON to put the target with the new task definition ARN
-            aws events put-targets --rule $EVENT_RULE --targets "$UPDATED_JSON"
+            # Prepare the updated target JSON with the necessary fields
+            FINAL_TARGET_JSON=$(echo $UPDATED_TARGET_JSON | jq -r '[.Targets[0] | {Id, Arn, RoleArn, Input, EcsParameters}]')
+
+            # Put the updated target configuration back into CloudWatch
+            aws events put-targets --rule $EVENT_RULE \
+              --targets "$FINAL_TARGET_JSON"
           done
 
 
