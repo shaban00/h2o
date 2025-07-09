@@ -77,11 +77,11 @@ jobs:
             --force-new-deployment \
             > /dev/null 2>&1
       
-      
+
       - name: Update CloudWatch Event Target Task Definition ARN for all event rules
         run: |
-          # Split the EVENT_RULES secret into an array of event rule names
-          EVENT_RULES_ARRAY=(${{ secrets.EVENT_RULES }})
+          # Split the EVENT_RULES environment variable into an array of event rule names
+          IFS=',' read -r -a EVENT_RULES_ARRAY <<< "$EVENT_RULES"
 
           # Loop through each event rule
           for EVENT_RULE in "${EVENT_RULES_ARRAY[@]}"; do
