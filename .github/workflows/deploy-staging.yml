@@ -145,7 +145,8 @@ jobs:
 
             # Update target configuration
             aws events put-targets --rule $EVENT_RULE \
-              --targets "$FINAL_TARGET_JSON"
+              --targets "$FINAL_TARGET_JSON" \
+              > /dev/null 2>&1
           done
 
 
