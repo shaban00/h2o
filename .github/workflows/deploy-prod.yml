@@ -1,0 +1,32 @@
+name: Deploy prod H2O to AWS ECS
+
+on:
+  push:
+    branches: [prod]
+  workflow_run:
+    workflows:
+      - Tests
+    types:
+      - completed
+    branches: [prod]
+
+
+jobs:
+  deploy:
+    name: Build & deploy prod H2O to AWS ECS with maintenance mode
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # For workflow_run events, we need to checkout the correct SHA
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+
+      - name: Build and tag image
+        run: |
+          docker build -t prod-h2o:latest .
+          docker tag prod-h2o:latest prod-h2o:latest
+
