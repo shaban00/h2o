@@ -1,21 +1,19 @@
 name: Deploy prod H2O to AWS ECS
 
 on:
-  push:
-    branches: [prod]
   workflow_run:
     workflows:
       - Tests
     types:
       - completed
-    branches: [prod]
+    branches: [main]
 
 
 jobs:
   deploy:
     name: Build & deploy prod H2O to AWS ECS with maintenance mode
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
     
     steps:
       - name: Checkout code
