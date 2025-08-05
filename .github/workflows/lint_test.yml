@@ -1,9 +1,11 @@
-name: Lint, Test, and Prod Deploy Pipeline
+name: Lint and Test
 
 on:
-  push:
-    branches: [prod]
-
+  pull_request:
+    branches-ignore:
+      - prod
+      - staging
+      - develop
 
 jobs:
   lint:
@@ -41,19 +43,3 @@ jobs:
         run: |
           docker ps -a
           docker compose logs
-
-  deploy:
-    name: Deploy to prod
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Build and tag image
-        run: |
-          docker build -t prod-h2o:latest .
-          docker tag prod-h2o:latest prod-h2o:latest
-      - name: Deploy info
-        run: |
-          echo "Deploying from: ${{ github.head_ref || github.ref_name }}"
-          echo "Event type: ${{ github.event_name }}"
