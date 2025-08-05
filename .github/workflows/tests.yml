@@ -1,14 +1,12 @@
 name: Tests
 
 on:
-  push:
-    branches: [prod, staging, develop]
   workflow_run:
     workflows:
       - Lints
     types:
       - completed
-    branches: [prod, staging, develop]
+    branches: [main, staging, develop]
   pull_request:
 
 
