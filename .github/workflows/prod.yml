@@ -1,4 +1,4 @@
-name: Lint, Test, and Deploy to Prod
+name: Lint, Test, and Deploy Prod H2O to AWS ECS
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Lint, Test, and Deploy to Staging
+name: Lint, Test, and Deploy Staging H2O to AWS ECS
 
 on:
   push:

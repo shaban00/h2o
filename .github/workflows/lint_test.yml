@@ -12,6 +12,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,7 +28,7 @@ jobs:
       - name: black
         run: |
           pip install `egrep -o 'black==\S+' web/requirements.txt`
-          black --check --diff .
+          black --check --diff . # Uses pyproject.toml
       
       - name: mypy
         run: |
