@@ -1,14 +1,16 @@
 name: Lint and Test
 
 on:
+  push:
+    branches: [develop]
   pull_request:
     branches-ignore:
       - prod
       - staging
-      - develop
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +36,7 @@ jobs:
           PYTHONPATH=. mypy
 
   test:
+    name: Test
     runs-on: ubuntu-latest
     needs: lint
     if: github.repository == 'shaban00/h2o'  # Don't run on forks
