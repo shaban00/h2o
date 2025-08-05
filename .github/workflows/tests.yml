@@ -25,7 +25,6 @@ jobs:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       ### run tests ###
-
       - name: docker compose up
         run: |
           docker ps -a                                      # show running containers
