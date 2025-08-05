@@ -1,8 +1,12 @@
 name: Lint and Test
+
 on:
   push:
     branches: [develop]
   pull_request:
+    branches-ignore:
+        - prod
+        - staging
 
 jobs:
   lint:

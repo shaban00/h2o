@@ -50,11 +50,7 @@ jobs:
     # 1. It's a pull request FROM develop branch TO staging branch
     # 2. OR direct push to staging branch
     if: |
-      (github.event_name == 'pull_request' && 
-       github.head_ref == 'develop' && 
-       github.base_ref == 'staging') ||
-      (github.event_name == 'push' && 
-       github.ref == 'refs/heads/staging')
+      (github.event_name == 'push' && github.ref == 'refs/heads/staging')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
