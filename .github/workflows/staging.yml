@@ -1,8 +1,9 @@
-name: Lint and Test
+name: Lint, Test, and Deploy Pipeline
+
 on:
   push:
-    branches: [develop]
-  pull_request:
+    branches: [staging]
+
 
 jobs:
   lint:
@@ -40,3 +41,28 @@ jobs:
         run: |
           docker ps -a
           docker compose logs
+
+  deploy:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    needs: test  # Only runs after test succeeds
+    # Only deploy when:
+    # 1. It's a pull request FROM develop branch TO staging branch
+    # 2. OR direct push to staging branch
+    if: |
+      (github.event_name == 'pull_request' && 
+       github.head_ref == 'develop' && 
+       github.base_ref == 'staging') ||
+      (github.event_name == 'push' && 
+       github.ref == 'refs/heads/staging')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build and tag image
+        run: |
+          docker build -t staging-h2o:latest .
+          docker tag staging-h2o:latest staging-h2o:latest
+      - name: Deploy info
+        run: |
+          echo "Deploying from: ${{ github.head_ref || github.ref_name }}"
+          echo "Event type: ${{ github.event_name }}"
