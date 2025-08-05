@@ -1,4 +1,4 @@
-name: Lint, Test, and Deploy Pipeline
+name: Lint, Test, and Staging Deploy Pipeline
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: lint  # This ensures test only runs after lint succeeds
+    needs: lint
     if: github.repository == 'shaban00/h2o'  # Don't run on forks
     steps:
       - uses: actions/checkout@v4
@@ -45,12 +45,7 @@ jobs:
   deploy:
     name: Deploy to staging
     runs-on: ubuntu-latest
-    needs: test  # Only runs after test succeeds
-    # Only deploy when:
-    # 1. It's a pull request FROM develop branch TO staging branch
-    # 2. OR direct push to staging branch
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/staging')
+    needs: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
