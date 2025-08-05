@@ -2,7 +2,7 @@ name: Lints
 
 on:
   push:
-    branches: [prod, staging, develop]
+    branches: [main, staging, develop]
   pull_request:
 
 
@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      
       - name: flake8
         run: |
           pip install `egrep -o 'flake8==\S+' web/requirements.txt`  # install our version of flake8
