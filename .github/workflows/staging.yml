@@ -1,4 +1,4 @@
-name: Lint, Test, and Deploy to staging
+name: Lint, Test, and Deploy to Staging
 
 on:
   push:
