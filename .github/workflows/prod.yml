@@ -50,7 +50,7 @@ jobs:
     # 1. It's a pull request FROM staging branch TO prod branch
     # 2. OR direct push to prod branch
     if: |
-      (github.event_name == 'push' && github.head_ref == 'staging' && github.base_ref == 'prod')
+      (github.event_name == 'push' && github.ref == 'refs/heads/prod')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
