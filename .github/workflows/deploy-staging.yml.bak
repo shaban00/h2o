@@ -171,33 +171,3 @@
 #             --listener-arn $(aws elbv2 describe-listeners --load-balancer-arn $(aws elbv2 describe-load-balancers --names $LOAD_BALANCER --query "LoadBalancers[0].LoadBalancerArn" --output text) --query "Listeners[?Protocol=='HTTPS'].ListenerArn" --output text) \
 #             --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$(aws elbv2 describe-target-groups --names $TARGET_GROUP --query 'TargetGroups[0].TargetGroupArn' --output text),Weight=100},{TargetGroupArn=$(aws elbv2 describe-target-groups --names $MAINTENANCE_TARGET_GROUP --query 'TargetGroups[0].TargetGroupArn' --output text),Weight=0}]}" \
 #             > /dev/null 2>&1
-
-
-name: Deploy staging H2O to AWS ECS
-
-on:
-  workflow_run:
-    workflows:
-      - Tests
-    types:
-      - completed
-    branches: [staging]
-
-jobs:
-  deploy:
-    name: Build & deploy staging H2O to AWS ECS with maintenance mode
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          # For workflow_run events, we need to checkout the correct SHA
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
-
-
-      - name: Build and tag image
-        run: |
-          docker build -t staging-h2o:latest .
-          docker tag staging-h2o:latest staging-h2o:latest
