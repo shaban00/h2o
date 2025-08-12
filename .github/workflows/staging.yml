@@ -87,8 +87,8 @@ jobs:
 
   lint-and-test:
     uses: ./.github/workflows/lint_test.yml
-    needs: check-source-branch
-    if: needs.check-source-branch.result == 'success' || github.event_name == 'push'
+    needs: [check-source-branch]
+    if: always() && (github.event_name == 'push' || needs.check-source-branch.result == 'success')
     with:
       python-version: '3.11'
       skip-repository-check: true
