@@ -69,8 +69,25 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  # Enforce branch protection: only allow merges from staging
+  check-source-branch:
+    name: Check Source Branch
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Verify source branch is staging
+        run: |
+          if [ "${{ github.head_ref }}" != "staging" ]; then
+            echo "❌ Error: Pull requests to prod must come from staging branch"
+            echo "Current source branch: ${{ github.head_ref }}"
+            exit 1
+          fi
+          echo "✅ Source branch verification passed"
+
   lint-and-test:
     uses: ./.github/workflows/lint_test.yml
+    needs: check-source-branch
+    if: always() && (needs.check-source-branch.result == 'success' || github.event_name == 'push')
     with:
       python-version: '3.11'
       skip-repository-check: true
