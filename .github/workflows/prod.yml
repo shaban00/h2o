@@ -73,7 +73,7 @@ jobs:
   check-source-branch:
     name: Check Source Branch
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'push' || 'pull_request'
     steps:
       - name: Verify source branch is staging
         run: |
@@ -86,8 +86,8 @@ jobs:
 
   lint-and-test:
     uses: ./.github/workflows/lint_test.yml
-    needs: [check-source-branch]
-    if: always() && (github.event_name == 'push' || needs.check-source-branch.result == 'success')
+    needs: check-source-branch
+    if: needs.check-source-branch.result == 'success'
     with:
       python-version: '3.11'
       skip-repository-check: true
