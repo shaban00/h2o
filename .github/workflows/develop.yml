@@ -1,0 +1,14 @@
+name: Develop - Lint and Test
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  lint-and-test:
+    uses: ./.github/workflows/lint_test.yml
+    with:
+      python-version: '3.11'
+      skip-repository-check: false
