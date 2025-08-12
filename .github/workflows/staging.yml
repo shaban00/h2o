@@ -87,6 +87,8 @@ jobs:
 
   lint-and-test:
     uses: ./.github/workflows/lint_test.yml
+    needs: check-source-branch
+    if: always() && (github.event_name == 'push' || needs.check-source-branch.result == 'success')
     with:
       python-version: '3.11'
       skip-repository-check: true
@@ -95,7 +97,7 @@ jobs:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: lint-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/staging' && needs.lint-and-test.result == 'success'
     
     steps:
       - name: Checkout code
