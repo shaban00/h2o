@@ -1,75 +1,14 @@
-# name: Lint, Test, and Deploy Prod H2O to AWS ECS
-
-# on:
-#   push:
-#     branches: [prod]
-
-
-# jobs:
-#   lint:
-#     name: Lint
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
-#       - uses: actions/setup-python@v5
-#         with:
-#           python-version: '3.11'
-      
-#       - name: flake8
-#         run: |
-#           pip install `egrep -o 'flake8==\S+' web/requirements.txt`
-#           flake8 web/ --config web/setup.cfg
-#           flake8 docker/pandoc-lambda/function/ --config web/setup.cfg
-      
-#       - name: black
-#         run: |
-#           pip install `egrep -o 'black==\S+' web/requirements.txt`
-#           black --check --diff .
-      
-#       - name: mypy
-#         run: |
-#           cd web
-#           pip install -r requirements.txt
-#           PYTHONPATH=. mypy
-
-#   test:
-#     name: Test
-#     runs-on: ubuntu-latest
-#     needs: lint
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: docker compose up
-#         run: |
-#           docker ps -a
-#           docker compose logs
-
-#   deploy:
-#     name: Deploy to prod
-#     runs-on: ubuntu-latest
-#     needs: test
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-#       - name: Build and tag image
-#         run: |
-#           docker build -t prod-h2o:latest .
-#           docker tag prod-h2o:latest prod-h2o:latest
-#       - name: Deploy info
-#         run: |
-#           echo "Deploying from: ${{ github.head_ref || github.ref_name }}"
-#           echo "Event type: ${{ github.event_name }}"
-
-name: Production - Deploy to AWS ECS
+name: Production - Deploy to AWS
 
 on:
   push:
     branches: [prod]
   pull_request:
     branches: [prod]
-    types: [opened, synchronize, reopened]
+
 
 jobs:
-  # Enforce branch protection: only allow merges from staging
+  # Only allow merges from staging
   check-source-branch:
     name: Check Source Branch
     runs-on: ubuntu-latest
@@ -79,7 +18,6 @@ jobs:
         run: |
           if [ "${{ github.head_ref }}" != "staging" ]; then
             echo "❌ Error: Pull requests to prod must come from staging branch"
-            echo "Current source branch: ${{ github.head_ref }}"
             exit 1
           fi
           echo "✅ Source branch verification passed"
@@ -89,24 +27,32 @@ jobs:
     needs: check-source-branch
     if: always() && (github.event_name == 'push' || needs.check-source-branch.result == 'success')
 
-  deploy-production:
+  deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: lint-and-test
-    if: always() && github.event_name == 'push' && needs.lint-and-test.result == 'success' && github.ref == 'refs/heads/prod'
+    if: always() && github.event_name == 'push' && needs.lint-and-test.result == 'success'
+    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Build and push Docker image
+
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.PROD_AWS_REGION }}
+
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+
+      - name: Build and push docker image to AWS ECR
         run: |
           docker build -t prod-h2o:latest .
           docker tag prod-h2o:latest prod-h2o:latest
-      
-      - name: Deployment summary
-        run: |
-          echo "🚀 **Production Deployment Complete**"
-          echo "- Branch: ${{ github.ref_name }}"
-          echo "- Commit: ${{ github.sha }}"
-          echo "- Environment: production"
-          echo "- Deploy time: $(date)"
