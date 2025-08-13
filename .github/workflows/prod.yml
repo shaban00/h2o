@@ -40,5 +40,4 @@ jobs:
 
       - name: Build and push docker image to AWS ECR
         run: |
-          docker build -t prod-h2o:latest .
-          docker tag prod-h2o:latest prod-h2o:latest
+          docker ps -a
