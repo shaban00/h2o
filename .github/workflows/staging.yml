@@ -1,76 +1,14 @@
-# name: Lint, Test, and Deploy Staging H2O to AWS ECS
-
-# on:
-#   push:
-#     branches: [staging]
-
-
-# jobs:
-#   lint:
-#     name: Lint
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
-#       - uses: actions/setup-python@v5
-#         with:
-#           python-version: '3.11'
-      
-#       - name: flake8
-#         run: |
-#           pip install `egrep -o 'flake8==\S+' web/requirements.txt`
-#           flake8 web/ --config web/setup.cfg
-#           flake8 docker/pandoc-lambda/function/ --config web/setup.cfg
-      
-#       - name: black
-#         run: |
-#           pip install `egrep -o 'black==\S+' web/requirements.txt`
-#           black --check --diff .
-      
-#       - name: mypy
-#         run: |
-#           cd web
-#           pip install -r requirements.txt
-#           PYTHONPATH=. mypy
-
-#   test:
-#     name: Test
-#     runs-on: ubuntu-latest
-#     needs: lint
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: docker compose up
-#         run: |
-#           docker ps -a
-#           docker compose logs
-
-#   deploy:
-#     name: Deploy to staging
-#     runs-on: ubuntu-latest
-#     needs: test
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-#       - name: Build and tag image
-#         run: |
-#           docker build -t staging-h2o:latest .
-#           docker tag staging-h2o:latest staging-h2o:latest
-#       - name: Deploy info
-#         run: |
-#           echo "Deploying from: ${{ github.head_ref || github.ref_name }}"
-#           echo "Event type: ${{ github.event_name }}"
-
-
-name: Staging - Deploy to AWS ECS
+name: Staging - Deploy to AWS
 
 on:
   push:
     branches: [staging]
   pull_request:
     branches: [staging]
-    types: [opened, synchronize, reopened]
+
 
 jobs:
-  # Enforce branch protection: only allow merges from develop
+  # Only allow merges from develop
   check-source-branch:
     name: Check Source Branch
     runs-on: ubuntu-latest
@@ -80,7 +18,6 @@ jobs:
         run: |
           if [ "${{ github.head_ref }}" != "develop" ]; then
             echo "❌ Error: Pull requests to staging must come from develop branch"
-            echo "Current source branch: ${{ github.head_ref }}"
             exit 1
           fi
           echo "✅ Source branch verification passed"
@@ -90,25 +27,19 @@ jobs:
     needs: check-source-branch
     if: always() && (github.event_name == 'push' || needs.check-source-branch.result == 'success')
 
-  deploy-staging:
+  deploy:
     name: Deploy to Staging
     runs-on: ubuntu-latest
     needs: lint-and-test
-    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/staging' && needs.lint-and-test.result == 'success'
+    if: always() && github.event_name == 'push' && needs.lint-and-test.result == 'success'
     
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Build and push Docker image
+
+
+      - name: Build and push docker image to AWS ECR
         run: |
           docker build -t staging-h2o:latest .
           docker tag staging-h2o:latest staging-h2o:latest
-      
-      - name: Deployment summary
-        run: |
-          echo "🚀 **Staging Deployment Complete**"
-          echo "- Branch: ${{ github.ref_name }}"
-          echo "- Commit: ${{ github.sha }}"
-          echo "- Environment: staging"
-          echo "- Deploy time: $(date)"
