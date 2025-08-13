@@ -41,5 +41,4 @@ jobs:
 
       - name: Build and push docker image to AWS ECR
         run: |
-          docker build -t staging-h2o:latest .
-          docker tag staging-h2o:latest staging-h2o:latest
+          docker ps -a
